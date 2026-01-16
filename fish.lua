@@ -28,6 +28,8 @@ local SecretFishList = {
     "Ghost Shark",
     "Megalodon",
     "Skeleton Narwhal",
+    "GEMSTONE Ruby",
+    "Ruby",
     -- Tambahkan nama lain di sini jika ada update baru
 }
 
