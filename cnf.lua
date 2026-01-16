@@ -18,11 +18,11 @@ getgenv().CNF = {
         "Ghost Shark",
         "Megalodon",
         "Skeleton Narwhal",
+        "Synodontis",
     },
 
     StoneList = {
         "Ruby",
-        "Sandy Ruby",
         "Enchant Stone",
     }
 }
