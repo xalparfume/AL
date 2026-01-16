@@ -1,7 +1,7 @@
 getgenv().CNF = {
     Webhook_Fish = "https://discordapp.com/api/webhooks/1461678791364579405/Fw2q3tD0g-Vjrg1chacp69RlKWyz11f2GWG55TTHdEjcfx4F5ZE0aoxCjhsRwEJE60gJ",
     Webhook_Leave = "https://discordapp.com/api/webhooks/1461679018482077793/teXw8CyPt33ffoIoQB1DzhMHeXOGDcylFFtHbjBFK3nWLrwDnIm2nSLH1T8_rdpy-qBP",
-    Webhook_List = "MASUKKAN_URL_WEBHOOK_LIST_DISINI",
+    Webhook_List = "https://discordapp.com/api/webhooks/1461756167285117190/HeO0k35cPyKN-AA4d9TpLRZ7CDslwVngovlmzSsCsuBIjM_BDWyV3M2a8PB-77vAQ3Ri",
 
     SecretList = {
         "Crystal Crab",
