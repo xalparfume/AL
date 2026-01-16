@@ -152,7 +152,7 @@ local function SendWebhook(data, category)
         embedTitle = data.Player .. " | Secret Caught!"
         embedColor = 3447003 
         embedFields = {
-            { ["name"] = "⚓ Item Name", ["value"] = data.Item, ["inline"] = true },
+            { ["name"] = "🎣 Item Name", ["value"] = data.Item, ["inline"] = true },
             { ["name"] = "🧬 Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
             { ["name"] = "⚖️ Weight", ["value"] = data.Weight, ["inline"] = true }
         }
