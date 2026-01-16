@@ -1,6 +1,6 @@
 getgenv().CNF = {
-    Webhook_Fish = "MASUKKAN_URL_WEBHOOK_IKAN_DISINI",
-    Webhook_Leave = "MASUKKAN_URL_WEBHOOK_LEAVE_DISINI",
+    Webhook_Fish = "https://discordapp.com/api/webhooks/1461657990418661471/YP8dG8zbMLIBVxgYoYRuAKLyyJMwoPRO4gSOPEQC1gOU6svc98vfmT_Qugq6GAytf3HQ",
+    Webhook_Leave = "https://discordapp.com/api/webhooks/1461658096832086079/J-FHRV1vkFLIwXVIlM2HltDmbokfwh9OCN90tlkF9qen2m-Y2Q1rmqpBGj43hYAKsJQF",
 
     SecretList = {
         "Orca",
@@ -20,11 +20,9 @@ getgenv().CNF = {
         "Skeleton Narwhal",
     },
 
-    -- Daftar Stone
     StoneList = {
         "Ruby",
-        "Enchant Stone",
     }
 }
 
-loadstring(game:HttpGet("PASTE_LINK_RAW_GITHUB_XAL_LUA_DISINI"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/xalparfume/AL/refs/heads/main/xal.lua"))()
