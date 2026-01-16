@@ -1,18 +1,16 @@
---[[
-    FISH IT NOTIFIER - CLEAN TEXT VERSION
-    Fitur: 
-    - Auto Hapus kode HTML/RichText (<b>, <font>, dll) agar rapi di Discord
-    - Headless (Ringan tanpa UI)
-    - Notifikasi Startup
+--[[ 
+   FISH IT NOTIFIER - FINAL STABLE VERSION
+   Metode: Name Filter (Paling Akurat)
+   Fitur: Footer "XAL Webhook" + Clean Text Discord
 ]]
 
--- 1. KONFIGURASI
 local Webhook_URL = "https://discord.com/api/webhooks/1454735553638563961/C0KfomZhdu3KjmaqPx4CTi6NHbhIjcLaX_HpeSKqs66HUc179MQ9Ha_weV_v8zl1MjYK"
 
+-- Daftar Ikan (Tambahkan nama baru di sini jika ada update)
 local SecretFishList = {
     "Orca",
     "Crystal Crab",
-    "Monster Shark",
+    "Monster Shark", -- Ikan di screenshot kamu
     "Eerie Shark",
     "Great Whale",
     "Robot Kraken",
@@ -36,10 +34,8 @@ local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
--- >> FUNGSI PEMBERSIH TEKS (BARU) <<
+-- Fungsi Hapus Kode Warna (Biar Rapi di Discord)
 local function StripTags(str)
-    -- Menghapus semua teks yang ada di dalam kurung siku <...>
-    -- Contoh: <font color="red">Ikan</font> menjadi "Ikan"
     return string.gsub(str, "<[^>]+>", "")
 end
 
@@ -47,13 +43,15 @@ local function SendWebhook(cleanMsg)
     if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then return end
 
     local embedData = {
-        ["username"] = "Fish It Spy",
+        ["username"] = "XAL APP",
         ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
         ["embeds"] = {{
-            ["title"] = "🚨 SECRET FISH ALERT!",
-            ["description"] = "Pesan Sistem Terdeteksi:\n\n**" .. cleanMsg .. "**",
-            ["color"] = 16711680,
-            ["footer"] = { ["text"] = "Server Job ID: " .. game.JobId },
+            ["title"] = "🐟 XAL Fish It Alert.!",
+            ["description"] = "New Fish Caught !\n\n**" .. cleanMsg .. "**",
+            ["color"] = 3447003, -- Warna Biru (Supaya beda dikit)
+            ["footer"] = { 
+                ["text"] = "XAL Webhook" 
+            },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
@@ -67,15 +65,15 @@ local function SendWebhook(cleanMsg)
 end
 
 local function CheckAndSend(msg)
-    -- 1. Bersihkan pesan dari kode HTML dulu
+    -- Bersihkan dulu tag warnanya agar pencarian nama lebih mudah
     local cleanMsg = StripTags(msg) 
     local lowerMsg = string.lower(cleanMsg)
 
-    -- 2. Cek kata kunci
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
         local isSecret = false
         for _, fishName in pairs(SecretFishList) do
+            -- Kita cari nama ikan di teks yang SUDAH BERSIH
             if string.find(lowerMsg, string.lower(fishName)) then
                 isSecret = true
                 break
@@ -83,19 +81,24 @@ local function CheckAndSend(msg)
         end
 
         if isSecret then
-            -- Kirim pesan yang SUDAH DIBERSIHKAN
-            SendWebhook(cleanMsg)
+            SendWebhook(cleanMsg) -- Kirim teks bersih ke Discord
             
+            -- Notifikasi di layar HP
             StarterGui:SetCore("SendNotification", {
                 Title = "Webhook Terkirim!",
-                Text = "Menemukan: " .. fishName, -- Menampilkan nama ikan saja biar pendek
+                Text = cleanMsg,
                 Duration = 5
             })
         end
     end
 end
 
--- LISTENER CHAT
+-- LISTENER (Mendengar Chat Server)
+local TextChatService = game:GetService("TextChatService")
+TextChatService.OnIncomingMessage = function(message)
+    if message.TextSource == nil then CheckAndSend(message.Text) end
+end
+
 local ChatEvents = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 2)
 if ChatEvents then
     local OnMessage = ChatEvents:WaitForChild("OnMessageDoneFiltering", 2)
@@ -106,17 +109,9 @@ if ChatEvents then
     end
 end
 
-local TextChatService = game:GetService("TextChatService")
-TextChatService.OnIncomingMessage = function(message)
-    if message.TextSource == nil then 
-        CheckAndSend(message.Text)
-    end
-end
-
--- Notifikasi Tanda Aktif
+-- Tanda Script Jalan
 StarterGui:SetCore("SendNotification", {
-    Title = "Fish Notifier Clean Ver",
-    Text = "Siap memantau ikan secret...",
-    Icon = "rbxassetid://12543343358",
+    Title = "XAL Webhook Aktif",
+    Text = "Mode: Name Filter ",
     Duration = 5
 })
