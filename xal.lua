@@ -1,7 +1,7 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Smart Pipe Format)
-   UPDATE: Memisahkan Mutasi (FROZEN | Synodontis) tapi Big tetap menempel.
+   DESKRIPSI: Mesin Logika (Auto-Detect Mutation)
+   UPDATE: Tidak perlu daftar mutasi manual. Script otomatis memisahkan kata depan.
 ]]
 
 -- 1. Validasi Config
@@ -35,52 +35,70 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI FORMATTER PINTAR]
-local function FormatToPipe(cleanMsg)
-    -- Hapus prefix [Server]:
+-- [FUNGSI AUTO DETECT PINTAR]
+local function ParseDataSmart(cleanMsg)
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- Ambil data mentah: Player, Item, Weight
-    local player, item, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
+    -- 1. Ambil kalimat dasar: "Player obtained a FullItemName (Weight)"
+    local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
 
-    if player and item and weight then
-        -- LOGIKA 1: Cek apakah depannya "Big"? (Big bukan mutasi, jadi jangan dipisah)
-        if string.sub(item, 1, 4) == "Big " then
-             return player .. " | " .. item .. " | " .. weight
-        end
+    if player and fullItem and weight then
+        
+        local mutation = nil
+        local finalItem = fullItem -- Defaultnya nama item penuh
+        local lowerFullItem = string.lower(fullItem)
 
-        -- LOGIKA 2: Cek Daftar Mutasi Umum (Case Insensitive)
-        -- Tambahkan nama mutasi lain di sini jika ada yang kurang
-        local mutations = {
-            "Shiny", "Frozen", "Negative", "Aurora", "Golden", 
-            "Radioactive", "Sinister", "Albino", "Dark", "Mythic", "Electric"
-        }
+        -- 2. Gabungkan Daftar Ikan & Batu untuk pengecekan
+        local allTargets = {}
+        for _, v in pairs(SecretList) do table.insert(allTargets, v) end
+        for _, v in pairs(StoneList) do table.insert(allTargets, v) end
 
-        for _, mut in pairs(mutations) do
-            -- Cek apakah nama item diawali dengan salah satu kata mutasi di atas + spasi
-            -- Contoh: "FROZEN " ada di awal "FROZEN Synodontis"
-            local s, e = string.find(string.lower(item), "^" .. string.lower(mut) .. " ")
-            
-            if s then
-                -- KETEMU MUTASI! Pisahkan.
-                local foundMutation = string.sub(item, s, e-1) -- Ambil teks mutasi asli (FROZEN)
-                local realItemName = string.sub(item, e+1)     -- Ambil sisa nama (Synodontis)
+        -- 3. Cari Nama Asli di dalam FullItem
+        -- Contoh: "GALAXY Synodontis", kita cari "Synodontis"
+        for _, baseName in pairs(allTargets) do
+            -- Cek apakah fullItem berakhiran dengan nama ikan ini
+            if string.find(lowerFullItem, string.lower(baseName) .. "$") then
                 
-                -- Format Baru: Player | Mutasi | NamaItem | Berat
-                return player .. " | " .. foundMutation .. " | " .. realItemName .. " | " .. weight
+                -- Jika ketemu, hitung kata depannya (Prefix)
+                local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
+                
+                -- Ambil kata sebelum nama ikan (Prefix)
+                -- Jika "GALAXY Synodontis", prefixnya "GALAXY "
+                if s > 1 then
+                    local prefixRaw = string.sub(fullItem, 1, s - 1)
+                    local prefixClean = string.gsub(prefixRaw, "%s+", "") -- Hapus spasi ("GALAXY " -> "GALAXY")
+
+                    -- LOGIKA PENGECUALIAN
+                    if prefixClean == "Big" then
+                        -- Jika prefixnya "Big", jangan anggap mutasi. Tempelkan kembali.
+                        mutation = nil
+                        finalItem = fullItem -- Tetap "Big Ruby"
+                    else
+                        -- Jika prefix lain (Frozen/Galaxy/Apapun), anggap MUTASI.
+                        mutation = prefixClean
+                        finalItem = baseName -- Itemnya jadi bersih ("Synodontis")
+                    end
+                else
+                    -- Tidak ada prefix (Murni "Synodontis")
+                    mutation = nil
+                    finalItem = fullItem
+                end
+                break -- Sudah ketemu, stop looping
             end
         end
 
-        -- LOGIKA 3: Default (Jika tidak ada mutasi atau Big)
-        -- Format: Player | Item | Berat
-        return player .. " | " .. item .. " | " .. weight
+        return {
+            Player = player,
+            Item = finalItem,
+            Mutation = mutation,
+            Weight = weight
+        }
     else
-        -- Jika pola kalimat gagal dibaca, kembalikan pesan asli
-        return msg
+        return nil
     end
 end
 
-local function SendWebhook(finalMsg, category)
+local function SendWebhook(data, category)
     if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then return end
 
     local embedTitle = "🐟 XAL FISH ALERT!"
@@ -88,10 +106,23 @@ local function SendWebhook(finalMsg, category)
     
     if category == "SECRET" then
         embedTitle = "🐟 XAL SECRET ALERT!"
-        embedColor = 3447003 -- Biru
+        embedColor = 3447003 
     elseif category == "STONE" then
         embedTitle = "💎 XAL STONE ALERT!"
-        embedColor = 16753920 -- Oranye/Emas
+        embedColor = 16753920 
+    end
+
+    -- Header
+    local headerText = "Congratulations " .. data.Player .. " catch:"
+    
+    -- Body Logic
+    local bodyText = ""
+    if data.Mutation then
+        -- Ada Mutasi: Synodontis | GALAXY | 172.3kg
+        bodyText = "**" .. data.Item .. " | " .. data.Mutation .. " | " .. data.Weight .. "**"
+    else
+        -- Polos/Big: Big Ruby | 7.3kg
+        bodyText = "**" .. data.Item .. " | " .. data.Weight .. "**"
     end
 
     local embedData = {
@@ -99,7 +130,7 @@ local function SendWebhook(finalMsg, category)
         ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
         ["embeds"] = {{
             ["title"] = embedTitle,
-            ["description"] = "New Item Caught !\n\n**" .. finalMsg .. "**",
+            ["description"] = headerText .. "\n\n" .. bodyText,
             ["color"] = embedColor,
             ["footer"] = { ["text"] = "XAL Webhook" },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
@@ -122,24 +153,28 @@ local function CheckAndSend(msg)
     
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
-        -- Panggil fungsi format pintar kita
-        local finalMsg = FormatToPipe(cleanMsg)
+        -- Gunakan Parser Auto-Detect
+        local data = ParseDataSmart(cleanMsg)
 
-        -- Cek Secret
-        for _, name in pairs(SecretList) do
-            if string.find(lowerMsg, string.lower(name)) then
-                SendWebhook(finalMsg, "SECRET")
-                StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=finalMsg, Duration=5})
-                return
+        if data then
+            -- Cek Kategori Secret (Pakai nama item bersih atau full item untuk keamanan)
+            -- Kita loop config lagi untuk memastikan kategori webhook yg benar
+            for _, name in pairs(SecretList) do
+                -- Cek apakah nama config ada di dalam Item yang sudah dibersihkan parser
+                if string.find(string.lower(data.Item), string.lower(name)) then
+                    SendWebhook(data, "SECRET")
+                    StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=data.Item, Duration=5})
+                    return
+                end
             end
-        end
 
-        -- Cek Stone
-        for _, name in pairs(StoneList) do
-            if string.find(lowerMsg, string.lower(name)) then
-                SendWebhook(finalMsg, "STONE")
-                StarterGui:SetCore("SendNotification", {Title="XAL Stone!", Text=finalMsg, Duration=5})
-                return
+            -- Cek Kategori Stone
+            for _, name in pairs(StoneList) do
+                if string.find(string.lower(data.Item), string.lower(name)) then
+                    SendWebhook(data, "STONE")
+                    StarterGui:SetCore("SendNotification", {Title="XAL Stone!", Text=data.Item, Duration=5})
+                    return
+                end
             end
         end
     end
@@ -162,5 +197,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Mutation", Text="Format: Player | Mutasi | Item | Kg", Duration=5})
-print("✅ XAL Mutation Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Auto", Text="Auto-Detect Mutation Ready!", Duration=5})
+print("✅ XAL Auto Logic Loaded!")
