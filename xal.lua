@@ -1,11 +1,3 @@
---[[ 
-   FILENAME: xal.lua
-   DESKRIPSI: Final Logic + Auto-Image Fish + INSTANT Leave (No Avatar)
-   UPDATE: 
-   - Menghapus pengambilan gambar Avatar pada notifikasi Leave (supaya 0 delay).
-   - Tetap menggunakan layout kolom rapi untuk Username & ID.
-]]
-
 if not getgenv().CNF then return end
 
 local Config = getgenv().CNF
@@ -16,7 +8,6 @@ local SecretList = Config.SecretList or {}
 local StoneList = Config.StoneList or {}
 local DiscordMap = Config.DiscordID_List or {} 
 
--- Services
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -41,7 +32,6 @@ local function GetUsername(chatName)
     return chatName
 end
 
--- [MAGIC: CONVERT ITEM ID TO IMAGE]
 local function GetThumbnailURL(assetId)
     if not assetId then return nil end
     local idNumber = assetId:match("rbxassetid://(%d+)") or assetId:match("^(%d+)$")
@@ -56,7 +46,6 @@ local function GetThumbnailURL(assetId)
     return nil
 end
 
--- [FUNGSI PENCARI GAMBAR DALAM GAME]
 local function GetItemImageDynamic(itemName)
     local searchName = itemName
     searchName = string.gsub(searchName, "Big%s*", "")
@@ -133,7 +122,6 @@ local function SendWebhook(data, category)
     local TargetURL = ""
     local contentMsg = "" 
 
-    -- [TAGGING BUNYI]
     local realUser = GetUsername(data.Player)
     if DiscordMap[realUser] then
         if category == "LEAVE" then
@@ -149,19 +137,16 @@ local function SendWebhook(data, category)
 
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
 
-    -- [SETUP VISUAL]
     local embedTitle = ""
     local embedColor = 3447003
     local embedFields = {} 
     local descriptionText = "" 
     local embedThumbnail = nil 
     
-    -- [AUTO IMAGE LOGIC]
     if category == "SECRET" or category == "STONE" then
         local autoImage = GetItemImageDynamic(data.Item)
         if autoImage then embedThumbnail = { ["url"] = autoImage } end
     end
-    -- [LEAVE IMAGE REMOVED] -> Leave tidak akan minta gambar ke Roblox lagi.
 
     if category == "SECRET" then
         embedTitle = data.Player .. " | Secret Caught!"
@@ -173,7 +158,7 @@ local function SendWebhook(data, category)
         }
 
     elseif category == "STONE" then
-        embedTitle = data.Player .. " | Get Ruby Gemstone!"
+        embedTitle = data.Player .. " | Ruby Gemstone!"
         embedColor = 16753920 
         embedFields = {
             { ["name"] = "💎 Stone Name", ["value"] = data.Item, ["inline"] = true },
@@ -184,14 +169,13 @@ local function SendWebhook(data, category)
     elseif category == "LEAVE" then
         local dispName = data.DisplayName or data.Player
         embedTitle = dispName .. " | Left the server."
-        embedColor = 16711680 -- Merah
+        embedColor = 16711680
         
-        -- Layout Kolom Tetap Rapi (Tanpa Gambar)
         embedFields = {
             { ["name"] = "👤 Username", ["value"] = "@" .. data.Player, ["inline"] = true },
             { ["name"] = "🆔 User ID", ["value"] = tostring(data.UserId), ["inline"] = true }
         }
-        embedThumbnail = nil -- Pastikan Kosong
+        embedThumbnail = nil
 
     elseif category == "PLAYERS" then
         embedTitle = "👥 List Player In Server"
@@ -211,7 +195,7 @@ local function SendWebhook(data, category)
             ["fields"] = embedFields, 
             ["thumbnail"] = embedThumbnail,
             ["footer"] = { 
-                ["text"] = "XAL Automation System", 
+                ["text"] = "XAL Server Monitoring", 
                 ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" 
             },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
@@ -291,9 +275,7 @@ if ChatEvents then
     end
 end
 
--- [LEAVE TANPA DELAY]
 Players.PlayerRemoving:Connect(function(player)
-    -- Tetap pakai task.spawn supaya aman 100%
     task.spawn(function()
         SendWebhook({
             Player = player.Name, 
@@ -305,5 +287,5 @@ end)
 
 StartPlayerListLoop()
 
-StarterGui:SetCore("SendNotification", {Title="XAL | Fast Mode", Text="Loaded!", Duration=5})
-print("✅ XAL Webhook Fast Mode Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Notifications!", Text="Loaded!", Duration=5})
+print("✅ XAL Webhook Loaded!")
