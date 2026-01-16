@@ -1,3 +1,11 @@
+--[[ 
+   FILENAME: xal.lua
+   DESKRIPSI: Final Logic + Auto-Image Fish + INSTANT Leave (No Avatar)
+   UPDATE: 
+   - Menghapus pengambilan gambar Avatar pada notifikasi Leave (supaya 0 delay).
+   - Tetap menggunakan layout kolom rapi untuk Username & ID.
+]]
+
 if not getgenv().CNF then return end
 
 local Config = getgenv().CNF
@@ -33,19 +41,14 @@ local function GetUsername(chatName)
     return chatName
 end
 
--- [MAGIC FUNCTION: CONVERT RBXASSETID TO HTTPS]
--- Ini adalah fungsi yang kamu temukan! Saya rapikan sedikit variabelnya.
+-- [MAGIC: CONVERT ITEM ID TO IMAGE]
 local function GetThumbnailURL(assetId)
     if not assetId then return nil end
-    
     local idNumber = assetId:match("rbxassetid://(%d+)") or assetId:match("^(%d+)$")
     if not idNumber then return nil end
 
     local apiUrl = string.format("https://thumbnails.roblox.com/v1/assets?assetIds=%s&type=Asset&size=420x420&format=Png", idNumber)
-    
-    local success, response = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(apiUrl))
-    end)
+    local success, response = pcall(function() return HttpService:JSONDecode(game:HttpGet(apiUrl)) end)
 
     if success and response and response.data and response.data[1] then
         return response.data[1].imageUrl
@@ -54,33 +57,24 @@ local function GetThumbnailURL(assetId)
 end
 
 -- [FUNGSI PENCARI GAMBAR DALAM GAME]
--- Mencari item di ReplicatedStorage fisch dan mengambil TextureID-nya
 local function GetItemImageDynamic(itemName)
-    -- Coba cari di folder resources (struktur umum Fisch)
+    local searchName = itemName
+    searchName = string.gsub(searchName, "Big%s*", "")
+    searchName = string.gsub(searchName, "Shiny%s*", "")
+    searchName = string.gsub(searchName, "^%s*(.-)%s*$", "%1")
+
     local targetItem = nil
-    
-    -- Kita cari recursive di ReplicatedStorage (karena kadang folder pindah)
-    -- Tapi demi efisiensi, kita cek folder umum dulu
     if ReplicatedStorage:FindFirstChild("resources") and ReplicatedStorage.resources:FindFirstChild("items") then
-        -- Cek di folder fish
         if ReplicatedStorage.resources.items:FindFirstChild("fish") then
-            targetItem = ReplicatedStorage.resources.items.fish:FindFirstChild(itemName)
+            targetItem = ReplicatedStorage.resources.items.fish:FindFirstChild(searchName)
         end
-        -- Cek di folder rods/items lain jika perlu (tapi kita fokus ikan)
     end
 
     if targetItem then
-        -- Jika item ketemu, ambil ID gambarnya (biasanya di property Texture, Image, atau Icon)
         local rawId = targetItem:FindFirstChild("Texture") or targetItem.TextureId or targetItem:FindFirstChild("Icon")
+        if not rawId and targetItem:IsA("MeshPart") then rawId = targetItem.TextureID end
         
-        -- Kadang texture ada di dalam MeshPart
-        if not rawId and targetItem:IsA("MeshPart") then
-            rawId = targetItem.TextureID
-        end
-        
-        -- Kalau propertinya ketemu, convert pakai API
         if rawId then
-            -- Kadang rawId itu Instance (Value), kita butuh .Value-nya
             if typeof(rawId) == "Instance" and rawId:IsA("StringValue") then
                 return GetThumbnailURL(rawId.Value)
             elseif typeof(rawId) == "string" then
@@ -88,8 +82,7 @@ local function GetItemImageDynamic(itemName)
             end
         end
     end
-    
-    return nil -- Gagal nemu gambar
+    return nil
 end
 
 local function ParseDataSmart(cleanMsg)
@@ -164,13 +157,11 @@ local function SendWebhook(data, category)
     local embedThumbnail = nil 
     
     -- [AUTO IMAGE LOGIC]
-    -- Script mencari gambar secara otomatis dari nama item
     if category == "SECRET" or category == "STONE" then
         local autoImage = GetItemImageDynamic(data.Item)
-        if autoImage then
-            embedThumbnail = { ["url"] = autoImage }
-        end
+        if autoImage then embedThumbnail = { ["url"] = autoImage } end
     end
+    -- [LEAVE IMAGE REMOVED] -> Leave tidak akan minta gambar ke Roblox lagi.
 
     if category == "SECRET" then
         embedTitle = data.Player .. " | Secret Caught!"
@@ -192,10 +183,15 @@ local function SendWebhook(data, category)
 
     elseif category == "LEAVE" then
         local dispName = data.DisplayName or data.Player
-        embedTitle = dispName .. " | @" .. data.Player .. " | has left the server."
-        embedColor = 16711680
-        embedThumbnail = nil 
-        descriptionText = "" 
+        embedTitle = dispName .. " | Left the server."
+        embedColor = 16711680 -- Merah
+        
+        -- Layout Kolom Tetap Rapi (Tanpa Gambar)
+        embedFields = {
+            { ["name"] = "👤 Username", ["value"] = "@" .. data.Player, ["inline"] = true },
+            { ["name"] = "🆔 User ID", ["value"] = tostring(data.UserId), ["inline"] = true }
+        }
+        embedThumbnail = nil -- Pastikan Kosong
 
     elseif category == "PLAYERS" then
         embedTitle = "👥 List Player In Server"
@@ -295,11 +291,19 @@ if ChatEvents then
     end
 end
 
+-- [LEAVE TANPA DELAY]
 Players.PlayerRemoving:Connect(function(player)
-    SendWebhook({Player = player.Name, DisplayName = player.DisplayName}, "LEAVE")
+    -- Tetap pakai task.spawn supaya aman 100%
+    task.spawn(function()
+        SendWebhook({
+            Player = player.Name, 
+            DisplayName = player.DisplayName,
+            UserId = player.UserId
+        }, "LEAVE")
+    end)
 end)
 
 StartPlayerListLoop()
 
-StarterGui:SetCore("SendNotification", {Title="XAL | Auto Image", Text="System Ready!", Duration=5})
-print("✅ XAL Webhook Auto-Image Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL | Fast Mode", Text="Loaded!", Duration=5})
+print("✅ XAL Webhook Fast Mode Loaded!")
