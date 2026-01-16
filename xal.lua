@@ -80,8 +80,8 @@ local function SendWebhook(data, category)
     local TargetURL = ""
     local contentMsg = "" 
 
+    -- [TAGGING BUNYI (Di Luar Embed)]
     local realUser = GetUsername(data.Player)
-
     if DiscordMap[realUser] then
         if category == "LEAVE" then
              contentMsg = "User Left: <@" .. DiscordMap[realUser] .. ">"
@@ -90,62 +90,71 @@ local function SendWebhook(data, category)
         end
     end
 
-    if category == "LEAVE" then
-        TargetURL = Webhook_Leave
-    elseif category == "PLAYERS" then
-        TargetURL = Webhook_List
-    else
-        TargetURL = Webhook_Fish
-    end
+    if category == "LEAVE" then TargetURL = Webhook_Leave
+    elseif category == "PLAYERS" then TargetURL = Webhook_List
+    else TargetURL = Webhook_Fish end
 
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
 
-    local embedTitle = "🎣 XAL Fish Cought!"
+    -- [SETUP VISUAL CUSTOM]
+    local embedTitle = ""
     local embedColor = 3447003
-    local descriptionText = ""
+    local embedFields = {} 
+    local embedThumbnail = { ["url"] = "https://i.imgur.com/GWx0mX9.jpeg" } 
+    local descriptionText = "" -- KOSONG (Minimalis)
 
     if category == "SECRET" then
-        embedTitle = "🎣 XAL Secret Cought!"
+        -- [CUSTOM TITLE: Nama | Secret Caught!]
+        embedTitle = data.Player .. " | Secret Caught!"
         embedColor = 3447003 
-        local label = "Fish"
-        local body = data.Mutation and 
-            ("**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**") or 
-            ("**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**")
-        descriptionText = "Congratulations **" .. data.Player .. "** catch:\n" .. body
+        
+        embedFields = {
+            { ["name"] = "⚓ Item Name", ["value"] = data.Item, ["inline"] = true },
+            { ["name"] = "🧬 Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
+            { ["name"] = "⚖️ Weight", ["value"] = data.Weight, ["inline"] = true }
+        }
 
     elseif category == "STONE" then
-        embedTitle = "💎 XAL GEMSTONE Ruby!"
+        -- [CUSTOM TITLE: Nama | Get Ruby Gemstone!]
+        embedTitle = data.Player .. " | Get Ruby Gemstone!"
         embedColor = 16753920 
-        local label = "Stone"
-        local body = data.Mutation and 
-            ("**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**") or 
-            ("**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**")
-        descriptionText = "Congratulations **" .. data.Player .. "** catch:\n" .. body
+        
+        embedFields = {
+            { ["name"] = "💎 Stone Name", ["value"] = data.Item, ["inline"] = true },
+            { ["name"] = "✨ Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
+            { ["name"] = "⚖️ Weight", ["value"] = data.Weight, ["inline"] = true }
+        }
 
     elseif category == "LEAVE" then
-        embedTitle = "🚪 XAL Player Disconect!"
+        -- [CUSTOM TITLE: Display | @Username | has left the server.]
+        local dispName = data.DisplayName or data.Player
+        embedTitle = dispName .. " | @" .. data.Player .. " | has left the server."
+        
         embedColor = 16711680
-        if data.DisplayName then
-            descriptionText = "**" .. data.DisplayName .. "** (@" .. data.Player .. ") has left the server."
-        else
-            descriptionText = "**" .. data.Player .. "** has left the server."
-        end
+        embedThumbnail = nil -- No Thumbnail
+        descriptionText = "" -- Hapus deskripsi bawah, semua info sudah di judul.
 
     elseif category == "PLAYERS" then
-        embedTitle = "👥 List Player In Servers"
+        embedTitle = "👥 List Player In Server"
         embedColor = 5763719
         descriptionText = data.ListText
+        embedThumbnail = nil
     end
 
     local embedData = {
         ["username"] = "XAL Notifications!",
         ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
-        ["content"] = contentMsg,
+        ["content"] = contentMsg, 
         ["embeds"] = {{
             ["title"] = embedTitle,
             ["description"] = descriptionText,
             ["color"] = embedColor,
-            ["footer"] = { ["text"] = "XAL Webhook" },
+            ["fields"] = embedFields, 
+            ["thumbnail"] = embedThumbnail, 
+            ["footer"] = { 
+                ["text"] = "XAL Automation System", 
+                ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" 
+            },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
@@ -169,9 +178,7 @@ local function StartPlayerListLoop()
             for i, p in ipairs(allPlayers) do
                 listStr = listStr .. "**" .. i .. ". " .. p.DisplayName .. "** (@" .. p.Name .. ")\n"
             end
-            
             SendWebhook({ ListText = listStr }, "PLAYERS")
-            
             task.wait(1800) 
         end
     end)
@@ -186,7 +193,6 @@ local function CheckAndSend(msg)
         if data then
             for _, name in pairs(StoneList) do
                 if string.find(string.lower(data.Item), string.lower(name)) then
-                    
                     if string.find(string.lower(data.Item), "ruby") then
                         if data.Mutation and string.find(string.lower(data.Mutation), "gemstone") then 
                             SendWebhook(data, "STONE")
@@ -232,5 +238,5 @@ end)
 
 StartPlayerListLoop()
 
-StarterGui:SetCore("SendNotification", {Title="XAL | Fish It", Text="Successfully Turned On.!", Duration=5})
-print("✅ XAL Webhook Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL | Minimalist Mode", Text="Loaded!", Duration=5})
+print("✅ XAL Webhook Minimalist Loaded!")
