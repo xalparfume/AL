@@ -169,13 +169,11 @@ local function SendWebhook(data, category)
     elseif category == "LEAVE" then
         local dispName = data.DisplayName or data.Player
         embedTitle = dispName .. " | Left the server."
-        embedColor = 16711680
-        
-        embedFields = {
-            { ["name"] = "👤 Username", ["value"] = "@" .. data.Player, ["inline"] = true },
-            { ["name"] = "🆔 User ID", ["value"] = tostring(data.UserId), ["inline"] = true }
-        }
-        embedThumbnail = nil
+        embedColor = 16711680 
+        embedFields = {} 
+        descriptionText = "👤 @" .. data.Player 
+
+        embedThumbnail = nil 
 
     elseif category == "PLAYERS" then
         embedTitle = "👥 List Player In Server"
