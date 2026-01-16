@@ -1,20 +1,11 @@
---[[ 
-   FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Dual Webhook Support)
-   UPDATE: Memisahkan jalur pengiriman Fish vs Leave.
-]]
-
--- 1. Validasi Config
 if not getgenv().CNF then return end
 
--- 2. Load Config
 local Config = getgenv().CNF
 local Webhook_Fish = Config.Webhook_Fish
-local Webhook_Leave = Config.Webhook_Leave -- Ambil URL kedua
+local Webhook_Leave = Config.Webhook_Leave
 local SecretList = Config.SecretList or {}
 local StoneList = Config.StoneList or {}
 
--- Services
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,15 +13,10 @@ local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
--- =======================================================
--- SYSTEM FUNCTIONS
--- =======================================================
-
 local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI PARSE DATA]
 local function ParseDataSmart(cleanMsg)
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
@@ -49,6 +35,7 @@ local function ParseDataSmart(cleanMsg)
                 local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
                 if s > 1 then
                     local prefixRaw = string.sub(fullItem, 1, s - 1)
+                    
                     if string.match(prefixRaw, "Big%s*$") then
                         finalItem = "Big " .. baseName
                         mutation = string.gsub(prefixRaw, "Big%s*$", "")
@@ -59,6 +46,7 @@ local function ParseDataSmart(cleanMsg)
                         finalItem = baseName
                         mutation = prefixRaw
                     end
+                    
                     if mutation then
                         mutation = string.gsub(mutation, "^%s*(.-)%s*$", "%1")
                         if mutation == "" then mutation = nil end
@@ -76,57 +64,41 @@ local function ParseDataSmart(cleanMsg)
     end
 end
 
--- [FUNGSI KIRIM WEBHOOK PINTAR]
 local function SendWebhook(data, category)
-    local TargetURL = ""
-    
-    -- PILIH URL BERDASARKAN KATEGORI
-    if category == "LEAVE" then
-        TargetURL = Webhook_Leave
-    else
-        TargetURL = Webhook_Fish
-    end
+    local TargetURL = (category == "LEAVE") and Webhook_Leave or Webhook_Fish
+    if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
 
-    -- Cek apakah URL valid
-    if TargetURL == "" or TargetURL == nil or string.find(TargetURL, "MASUKKAN_URL") then return end
-
-    local embedTitle = "🐟 XAL FISH ALERT!"
+    local embedTitle = "🐟 XAL | FISH ALERT!"
     local embedColor = 3447003
     local descriptionText = ""
 
     if category == "SECRET" then
-        embedTitle = "🐟 XAL SECRET ALERT!"
-        embedColor = 3447003
+        embedTitle = "🐟 XAL | SECRET ALERT!"
+        embedColor = 3447003 
         local label = "Fish"
-        local body = ""
-        if data.Mutation then
-            body = "**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**"
-        else
-            body = "**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**"
-        end
+        local body = data.Mutation and 
+            ("**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**") or 
+            ("**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**")
         descriptionText = "Congratulations **" .. data.Player .. "** catch:\n\n" .. body
 
     elseif category == "STONE" then
-        embedTitle = "💎 XAL STONE ALERT!"
-        embedColor = 16753920
+        embedTitle = "💎 XAL | GEMSTONE RUBY!"
+        embedColor = 16753920 
         local label = "Stone"
-        local body = ""
-        if data.Mutation then
-            body = "**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**"
-        else
-            body = "**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**"
-        end
+        local body = data.Mutation and 
+            ("**" .. label .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**") or 
+            ("**" .. label .. ": " .. data.Item .. " | Weight: " .. data.Weight .. "**")
         descriptionText = "Congratulations **" .. data.Player .. "** catch:\n\n" .. body
 
     elseif category == "LEAVE" then
-        embedTitle = "🚪 XAL DISCONNECT"
-        embedColor = 16711680 -- Merah
+        embedTitle = "🚪 XAL | PLAYER DISCONNECT"
+        embedColor = 16711680 
         descriptionText = "**" .. data.Player .. "** has left the server."
     end
 
     local embedData = {
-        ["username"] = "XAL APP",
-        ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
+        ["username"] = "XAL Notification!",
+        ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
         ["embeds"] = {{
             ["title"] = embedTitle,
             ["description"] = descriptionText,
@@ -138,7 +110,7 @@ local function SendWebhook(data, category)
 
     pcall(function()
         httpRequest({
-            Url = TargetURL, -- Gunakan URL yang sudah dipilih tadi
+            Url = TargetURL,
             Method = "POST",
             Headers = { ["Content-Type"] = "application/json" },
             Body = HttpService:JSONEncode(embedData)
@@ -153,15 +125,28 @@ local function CheckAndSend(msg)
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         local data = ParseDataSmart(cleanMsg)
         if data then
-            for _, name in pairs(SecretList) do
+            
+            for _, name in pairs(StoneList) do
                 if string.find(string.lower(data.Item), string.lower(name)) then
-                    SendWebhook(data, "SECRET")
+                    
+                    if string.find(string.lower(data.Item), "ruby") then
+                        if data.Mutation and string.find(string.lower(data.Mutation), "gemstone") then
+                            SendWebhook(data, "STONE")
+                            StarterGui:SetCore("SendNotification", {Title="XAL GEMSTONE!", Text=data.Item, Duration=5})
+                        else
+                        end
+                    else
+                        SendWebhook(data, "STONE")
+                        StarterGui:SetCore("SendNotification", {Title="XAL Stone!", Text=data.Item, Duration=5})
+                    end
                     return
                 end
             end
-            for _, name in pairs(StoneList) do
+
+            for _, name in pairs(SecretList) do
                 if string.find(string.lower(data.Item), string.lower(name)) then
-                    SendWebhook(data, "STONE")
+                    SendWebhook(data, "SECRET")
+                    StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=data.Item, Duration=5})
                     return
                 end
             end
@@ -169,7 +154,6 @@ local function CheckAndSend(msg)
     end
 end
 
--- Listeners
 if TextChatService then
     TextChatService.OnIncomingMessage = function(message)
         if message.TextSource == nil then CheckAndSend(message.Text) end
@@ -186,10 +170,9 @@ if ChatEvents then
     end
 end
 
--- Listener Leave
 Players.PlayerRemoving:Connect(function(player)
     SendWebhook({Player = player.Name}, "LEAVE")
 end)
 
-StarterGui:SetCore("SendNotification", {Title="XAL Dual Webhook", Text="System Ready!", Duration=5})
-print("✅ XAL Dual Webhook Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL SERVER", Text="Running Notification!", Duration=5})
+print("✅ XAL Notification Loaded!")
