@@ -1,7 +1,7 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Auto-Detect Mutation)
-   UPDATE: Tidak perlu daftar mutasi manual. Script otomatis memisahkan kata depan.
+   DESKRIPSI: Mesin Logika (Final Formatter)
+   UPDATE: Nama Player dicetak TEBAL (Bold) di Header.
 ]]
 
 -- 1. Validasi Config
@@ -35,55 +35,49 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI AUTO DETECT PINTAR]
+-- [FUNGSI AUTO DETECT MUTASI]
 local function ParseDataSmart(cleanMsg)
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- 1. Ambil kalimat dasar: "Player obtained a FullItemName (Weight)"
+    -- 1. Ambil kalimat dasar
     local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
 
     if player and fullItem and weight then
         
         local mutation = nil
-        local finalItem = fullItem -- Defaultnya nama item penuh
+        local finalItem = fullItem
         local lowerFullItem = string.lower(fullItem)
 
-        -- 2. Gabungkan Daftar Ikan & Batu untuk pengecekan
+        -- 2. Gabungkan database ikan & batu
         local allTargets = {}
         for _, v in pairs(SecretList) do table.insert(allTargets, v) end
         for _, v in pairs(StoneList) do table.insert(allTargets, v) end
 
-        -- 3. Cari Nama Asli di dalam FullItem
-        -- Contoh: "GALAXY Synodontis", kita cari "Synodontis"
+        -- 3. Logika Pengurangan Kata (Full - Base = Mutasi)
         for _, baseName in pairs(allTargets) do
-            -- Cek apakah fullItem berakhiran dengan nama ikan ini
+            -- Cek apakah nama item berakhiran dengan nama dasar (misal: ... Synodontis)
             if string.find(lowerFullItem, string.lower(baseName) .. "$") then
                 
-                -- Jika ketemu, hitung kata depannya (Prefix)
                 local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
                 
-                -- Ambil kata sebelum nama ikan (Prefix)
-                -- Jika "GALAXY Synodontis", prefixnya "GALAXY "
+                -- Jika ada kata di depannya (Prefix)
                 if s > 1 then
                     local prefixRaw = string.sub(fullItem, 1, s - 1)
-                    local prefixClean = string.gsub(prefixRaw, "%s+", "") -- Hapus spasi ("GALAXY " -> "GALAXY")
+                    local prefixClean = string.gsub(prefixRaw, "%s+", "") -- Hapus spasi
 
-                    -- LOGIKA PENGECUALIAN
+                    -- Pengecualian "Big"
                     if prefixClean == "Big" then
-                        -- Jika prefixnya "Big", jangan anggap mutasi. Tempelkan kembali.
                         mutation = nil
                         finalItem = fullItem -- Tetap "Big Ruby"
                     else
-                        -- Jika prefix lain (Frozen/Galaxy/Apapun), anggap MUTASI.
-                        mutation = prefixClean
-                        finalItem = baseName -- Itemnya jadi bersih ("Synodontis")
+                        mutation = prefixClean -- "GALAXY"
+                        finalItem = baseName -- "Synodontis"
                     end
                 else
-                    -- Tidak ada prefix (Murni "Synodontis")
                     mutation = nil
                     finalItem = fullItem
                 end
-                break -- Sudah ketemu, stop looping
+                break
             end
         end
 
@@ -112,16 +106,17 @@ local function SendWebhook(data, category)
         embedColor = 16753920 
     end
 
-    -- Header
-    local headerText = "Congratulations " .. data.Player .. " catch:"
+    -- [UPDATE HEADER DI SINI] 
+    -- Menambahkan tanda ** di antara data.Player agar jadi Bold
+    local headerText = "Congratulations **" .. data.Player .. "** catch:"
     
-    -- Body Logic
+    -- Body Text (Logic Mutasi)
     local bodyText = ""
     if data.Mutation then
-        -- Ada Mutasi: Synodontis | GALAXY | 172.3kg
+        -- Ada Mutasi: Synodontis | GALAXY | 153.8kg
         bodyText = "**" .. data.Item .. " | " .. data.Mutation .. " | " .. data.Weight .. "**"
     else
-        -- Polos/Big: Big Ruby | 7.3kg
+        -- Polos: Synodontis | 153.8kg
         bodyText = "**" .. data.Item .. " | " .. data.Weight .. "**"
     end
 
@@ -153,14 +148,11 @@ local function CheckAndSend(msg)
     
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
-        -- Gunakan Parser Auto-Detect
         local data = ParseDataSmart(cleanMsg)
 
         if data then
-            -- Cek Kategori Secret (Pakai nama item bersih atau full item untuk keamanan)
-            -- Kita loop config lagi untuk memastikan kategori webhook yg benar
+            -- Cek Kategori Secret
             for _, name in pairs(SecretList) do
-                -- Cek apakah nama config ada di dalam Item yang sudah dibersihkan parser
                 if string.find(string.lower(data.Item), string.lower(name)) then
                     SendWebhook(data, "SECRET")
                     StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=data.Item, Duration=5})
@@ -197,5 +189,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Auto", Text="Auto-Detect Mutation Ready!", Duration=5})
-print("✅ XAL Auto Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Style", Text="Bold Name Loaded!", Duration=5})
+print("✅ XAL Bold Logic Loaded!")
