@@ -95,6 +95,6 @@ end
 
 StarterGui:SetCore("SendNotification", {
     Title = "XAL Webhook Aktif",
-    Text = "Mode: Hybrid (Color + Name)",
+    Text = "Script by: ALgiFH",
     Duration = 5
 })
