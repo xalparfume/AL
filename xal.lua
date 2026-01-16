@@ -1,7 +1,9 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Final Formatter)
-   UPDATE: Nama Player dicetak TEBAL (Bold) di Header.
+   DESKRIPSI: Mesin Logika (Label Format)
+   UPDATE: 
+   1. Shiny & Big dianggap bagian dari Nama Item (Bukan Mutasi).
+   2. Format Baru: "Fish: ... | Mutation: ... | Weight: ..."
 ]]
 
 -- 1. Validasi Config
@@ -35,46 +37,62 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI AUTO DETECT MUTASI]
+-- [FUNGSI AUTO DETECT - LOGIKA BARU]
 local function ParseDataSmart(cleanMsg)
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- 1. Ambil kalimat dasar
+    -- Ambil data mentah
     local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
 
     if player and fullItem and weight then
         
-        local mutation = nil
+        local mutation = "None" -- Default jika tidak ada mutasi
         local finalItem = fullItem
         local lowerFullItem = string.lower(fullItem)
 
-        -- 2. Gabungkan database ikan & batu
+        -- Gabungkan database ikan & batu
         local allTargets = {}
         for _, v in pairs(SecretList) do table.insert(allTargets, v) end
         for _, v in pairs(StoneList) do table.insert(allTargets, v) end
 
-        -- 3. Logika Pengurangan Kata (Full - Base = Mutasi)
+        -- Cek Nama Dasar
         for _, baseName in pairs(allTargets) do
-            -- Cek apakah nama item berakhiran dengan nama dasar (misal: ... Synodontis)
+            -- Cek apakah nama item berakhiran dengan nama dasar (misal: ... Ruby)
             if string.find(lowerFullItem, string.lower(baseName) .. "$") then
                 
                 local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
                 
                 -- Jika ada kata di depannya (Prefix)
                 if s > 1 then
-                    local prefixRaw = string.sub(fullItem, 1, s - 1)
-                    local prefixClean = string.gsub(prefixRaw, "%s+", "") -- Hapus spasi
-
-                    -- Pengecualian "Big"
-                    if prefixClean == "Big" then
-                        mutation = nil
-                        finalItem = fullItem -- Tetap "Big Ruby"
+                    local prefixRaw = string.sub(fullItem, 1, s - 1) -- "STONE Shiny " atau "Big "
+                    
+                    -- LOGIKA PISAH KATA
+                    -- Kita cek akhiran dari prefixnya
+                    
+                    if string.match(prefixRaw, "Big%s*$") then
+                        -- Jika prefix berakhiran "Big ", Big masuk ke Item.
+                        -- Sisa di depannya adalah mutasi.
+                        finalItem = "Big " .. baseName
+                        mutation = string.gsub(prefixRaw, "Big%s*$", "") -- Hapus "Big" dari mutasi
+                        
+                    elseif string.match(prefixRaw, "Shiny%s*$") then
+                        -- Jika prefix berakhiran "Shiny ", Shiny masuk ke Item.
+                        finalItem = "Shiny " .. baseName
+                        mutation = string.gsub(prefixRaw, "Shiny%s*$", "") -- Hapus "Shiny" dari mutasi
+                        
                     else
-                        mutation = prefixClean -- "GALAXY"
-                        finalItem = baseName -- "Synodontis"
+                        -- Jika bukan Big/Shiny (misal "GALAXY Synodontis")
+                        finalItem = baseName
+                        mutation = prefixRaw
                     end
+                    
+                    -- Bersihkan spasi berlebih pada mutasi
+                    mutation = string.gsub(mutation, "^%s*(.-)%s*$", "%1")
+                    if mutation == "" then mutation = "None" end
+                    
                 else
-                    mutation = nil
+                    -- Tidak ada prefix (Murni "Ruby")
+                    mutation = "None"
                     finalItem = fullItem
                 end
                 break
@@ -97,28 +115,24 @@ local function SendWebhook(data, category)
 
     local embedTitle = "🐟 XAL FISH ALERT!"
     local embedColor = 3447003
+    local labelType = "Item"
     
     if category == "SECRET" then
         embedTitle = "🐟 XAL SECRET ALERT!"
         embedColor = 3447003 
+        labelType = "Fish" -- Label untuk kategori Secret
     elseif category == "STONE" then
         embedTitle = "💎 XAL STONE ALERT!"
         embedColor = 16753920 
+        labelType = "Stone" -- Label untuk kategori Stone
     end
 
-    -- [UPDATE HEADER DI SINI] 
-    -- Menambahkan tanda ** di antara data.Player agar jadi Bold
+    -- Header
     local headerText = "Congratulations **" .. data.Player .. "** catch:"
     
-    -- Body Text (Logic Mutasi)
-    local bodyText = ""
-    if data.Mutation then
-        -- Ada Mutasi: Synodontis | GALAXY | 153.8kg
-        bodyText = "**" .. data.Item .. " | " .. data.Mutation .. " | " .. data.Weight .. "**"
-    else
-        -- Polos: Synodontis | 153.8kg
-        bodyText = "**" .. data.Item .. " | " .. data.Weight .. "**"
-    end
+    -- Body Format Baru: 
+    -- Fish: Shiny Ruby | Mutation: STONE | Weight: 5.7kg
+    local bodyText = "**" .. labelType .. ": " .. data.Item .. " | Mutation: " .. data.Mutation .. " | Weight: " .. data.Weight .. "**"
 
     local embedData = {
         ["username"] = "XAL APP",
@@ -153,6 +167,7 @@ local function CheckAndSend(msg)
         if data then
             -- Cek Kategori Secret
             for _, name in pairs(SecretList) do
+                -- Cek nama dasar di item yang sudah diproses
                 if string.find(string.lower(data.Item), string.lower(name)) then
                     SendWebhook(data, "SECRET")
                     StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=data.Item, Duration=5})
@@ -189,5 +204,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Style", Text="Bold Name Loaded!", Duration=5})
-print("✅ XAL Bold Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Label", Text="Format: Fish | Mutation | Kg", Duration=5})
+print("✅ XAL Label Logic Loaded!")
