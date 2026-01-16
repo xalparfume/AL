@@ -6,6 +6,7 @@ local Webhook_Leave = Config.Webhook_Leave
 local Webhook_List = Config.Webhook_List
 local SecretList = Config.SecretList or {}
 local StoneList = Config.StoneList or {}
+local DiscordMap = Config.DiscordID_List or {} 
 
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
@@ -15,11 +16,20 @@ local Players = game:GetService("Players")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 -- =======================================================
--- XAL PS NOTIFICATION
+-- SYSTEM FUNCTIONS
 -- =======================================================
 
 local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
+end
+
+local function GetUsername(chatName)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.DisplayName == chatName or p.Name == chatName then
+            return p.Name
+        end
+    end
+    return chatName
 end
 
 local function ParseDataSmart(cleanMsg)
@@ -68,7 +78,18 @@ end
 
 local function SendWebhook(data, category)
     local TargetURL = ""
-    
+    local contentMsg = "" 
+
+    local realUser = GetUsername(data.Player)
+
+    if DiscordMap[realUser] then
+        if category == "LEAVE" then
+             contentMsg = "User Left: <@" .. DiscordMap[realUser] .. ">"
+        else
+             contentMsg = "GG! <@" .. DiscordMap[realUser] .. ">"
+        end
+    end
+
     if category == "LEAVE" then
         TargetURL = Webhook_Leave
     elseif category == "PLAYERS" then
@@ -119,6 +140,7 @@ local function SendWebhook(data, category)
     local embedData = {
         ["username"] = "XAL Notifications!",
         ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
+        ["content"] = contentMsg,
         ["embeds"] = {{
             ["title"] = embedTitle,
             ["description"] = descriptionText,
@@ -164,8 +186,9 @@ local function CheckAndSend(msg)
         if data then
             for _, name in pairs(StoneList) do
                 if string.find(string.lower(data.Item), string.lower(name)) then
+                    
                     if string.find(string.lower(data.Item), "ruby") then
-                        if data.Mutation then 
+                        if data.Mutation and string.find(string.lower(data.Mutation), "gemstone") then 
                             SendWebhook(data, "STONE")
                             StarterGui:SetCore("SendNotification", {Title="Ruby GEMSTONE!", Text=data.Item, Duration=5})
                         end
