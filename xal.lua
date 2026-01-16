@@ -1,9 +1,3 @@
---[[ 
-   FILENAME: xal.lua
-   DESKRIPSI: Final Logic + Auto-Image Generator (API Roblox)
-   UPDATE: Menggunakan fungsi penemuanmu untuk mengambil gambar item secara otomatis dari file game.
-]]
-
 if not getgenv().CNF then return end
 
 local Config = getgenv().CNF
