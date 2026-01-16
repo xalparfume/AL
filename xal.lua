@@ -100,12 +100,12 @@ local function SendWebhook(data, category)
 
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
 
-    local embedTitle = "🐟 XAL Fish Cought!"
+    local embedTitle = "🎣 XAL Fish Cought!"
     local embedColor = 3447003
     local descriptionText = ""
 
     if category == "SECRET" then
-        embedTitle = "🐟 XAL Secret Cought!"
+        embedTitle = "🎣 XAL Secret Cought!"
         embedColor = 3447003 
         local label = "Fish"
         local body = data.Mutation and 
