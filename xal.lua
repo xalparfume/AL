@@ -1,7 +1,7 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Logic Mesin + Smart Mutation Parser
-   UPDATE: Logika Mutasi (Big bukan mutasi, kata lain adalah mutasi)
+   DESKRIPSI: Mesin Logika (Simple & Clean Format)
+   UPDATE: Menghapus "[Server]:" dan menyingkat "1/15K chance"
 ]]
 
 -- 1. Validasi Config
@@ -35,79 +35,30 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [LOGIKA UTAMA] Fungsi Membedah Pesan & Deteksi Mutasi
-local function ParseMessage(cleanMsg)
-    -- Hapus prefix [Server]:
+-- [FUNGSI FORMATTER BARU]
+local function FormatMessage(cleanMsg)
+    -- 1. Hapus awalan "[Server]: "
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- Ambil data: [NamaPlayer] obtained a [NamaItemLengkap] ([Berat])
-    local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
-
-    if player and fullItem and weight then
-        local mutation = "Tidak"
-        local finalItem = fullItem
-
-        -- Coba cek kata pertama (dipisahkan spasi)
-        local spaceIndex = string.find(fullItem, " ")
-        
-        if spaceIndex then
-            local firstWord = string.sub(fullItem, 1, spaceIndex - 1) -- Kata pertama
-            local restOfWord = string.sub(fullItem, spaceIndex + 1)   -- Sisa kalimat
-
-            if firstWord == "Big" then
-                -- KASUS 1: Jika kata pertama "Big", itu BUKAN mutasi.
-                mutation = "Tidak"
-                finalItem = fullItem -- Item tetap "Big Ruby"
-            else
-                -- KASUS 2: Jika kata pertama lain (Frozen, Shiny, dll), itu MUTASI.
-                mutation = firstWord -- Mutasi jadi "Frozen"
-                finalItem = restOfWord -- Item jadi "Ruby"
-            end
-        end
-
-        return {
-            Player = player,
-            Item = finalItem,
-            Weight = weight,
-            Mutation = mutation,
-            Raw = msg
-        }
-    else
-        return nil
-    end
+    -- 2. Ubah "with a 1 in ... chance!" menjadi "1/... chance!"
+    -- Contoh: "with a 1 in 15K chance!" -> "1/15K chance!"
+    msg = string.gsub(msg, "with a 1 in ", "1/")
+    
+    return msg
 end
 
--- Fungsi Kirim Webhook (Tampilan Grid Rapi)
-local function SendWebhook(data, category)
+local function SendWebhook(formattedMsg, category)
     if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then return end
 
     local embedTitle = "🐟 XAL FISH ALERT!"
     local embedColor = 3447003
-    local itemLabel = "Fish"
     
     if category == "SECRET" then
         embedTitle = "🐟 XAL SECRET ALERT!"
         embedColor = 3447003 -- Biru
-        itemLabel = "Fish"
     elseif category == "STONE" then
         embedTitle = "💎 XAL STONE ALERT!"
         embedColor = 16753920 -- Oranye/Emas
-        itemLabel = "Stone"
-    end
-
-    local fields = {}
-    
-    if data.Parsed then
-        fields = {
-            { ["name"] = "Nama",    ["value"] = data.Player,   ["inline"] = true },
-            { ["name"] = itemLabel, ["value"] = data.Item,     ["inline"] = true },
-            { ["name"] = "Mutasi",  ["value"] = data.Mutation, ["inline"] = true },
-            { ["name"] = "Weight",  ["value"] = data.Weight,   ["inline"] = true }
-        }
-    else
-        fields = {
-            { ["name"] = "System Message", ["value"] = "**" .. data.Raw .. "**", ["inline"] = false }
-        }
     end
 
     local embedData = {
@@ -115,8 +66,9 @@ local function SendWebhook(data, category)
         ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
         ["embeds"] = {{
             ["title"] = embedTitle,
+            -- Di sini kita pakai pesan yang sudah dipersingkat
+            ["description"] = "New Item Caught !\n\n**" .. formattedMsg .. "**",
             ["color"] = embedColor,
-            ["fields"] = fields,
             ["footer"] = { ["text"] = "XAL Webhook" },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
@@ -132,30 +84,20 @@ local function SendWebhook(data, category)
     end)
 end
 
--- Analisa Chat
 local function CheckAndSend(msg)
     local cleanMsg = StripTags(msg)
     local lowerMsg = string.lower(cleanMsg)
     
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
-        -- Proses Bedah Data
-        local parsedData = ParseMessage(cleanMsg)
-        
-        local sendData = {}
-        if parsedData then
-            sendData = parsedData
-            sendData.Parsed = true
-        else
-            sendData = { Raw = cleanMsg, Parsed = false }
-        end
+        -- Format pesan sesuai request (Hapus Server & Singkat Chance)
+        local finalMsg = FormatMessage(cleanMsg)
 
-        -- Cek Secret (Logic: Cari nama item yang SUDAH DIBERSIHKAN atau nama lengkap)
-        -- Kita cek full string aslinya biar aman (misal nama di config "King Crab")
+        -- Cek Secret
         for _, name in pairs(SecretList) do
             if string.find(lowerMsg, string.lower(name)) then
-                SendWebhook(sendData, "SECRET")
-                StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=cleanMsg, Duration=5})
+                SendWebhook(finalMsg, "SECRET")
+                StarterGui:SetCore("SendNotification", {Title="XAL Secret!", Text=finalMsg, Duration=5})
                 return
             end
         end
@@ -163,8 +105,8 @@ local function CheckAndSend(msg)
         -- Cek Stone
         for _, name in pairs(StoneList) do
             if string.find(lowerMsg, string.lower(name)) then
-                SendWebhook(sendData, "STONE")
-                StarterGui:SetCore("SendNotification", {Title="XAL Stone!", Text=cleanMsg, Duration=5})
+                SendWebhook(finalMsg, "STONE")
+                StarterGui:SetCore("SendNotification", {Title="XAL Stone!", Text=finalMsg, Duration=5})
                 return
             end
         end
@@ -188,5 +130,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Formatter", Text="Mutation Logic Updated!", Duration=5})
-print("✅ XAL Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Simple", Text="Clean Format Loaded!", Duration=5})
+print("✅ XAL Simple Logic Loaded!")
