@@ -10,6 +10,8 @@ getgenv().CNF = {
         ["zapelass123"]  = "444484989661478932",
         ["oliviagilbass"]  = "444484989661478932",
         ["bHpwfROqaruC"]  = "444484989661478932",
+        ["FleursMeron"]  = "661155146474192896",
+        ["yaaxjmn"]  = "661155146474192896",
     },
 
     SecretList = {
