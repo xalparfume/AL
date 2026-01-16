@@ -1,3 +1,9 @@
+--[[ 
+   FILENAME: xal.lua
+   DESKRIPSI: Final Logic + Auto-Image Generator (API Roblox)
+   UPDATE: Menggunakan fungsi penemuanmu untuk mengambil gambar item secara otomatis dari file game.
+]]
+
 if not getgenv().CNF then return end
 
 local Config = getgenv().CNF
@@ -8,6 +14,7 @@ local SecretList = Config.SecretList or {}
 local StoneList = Config.StoneList or {}
 local DiscordMap = Config.DiscordID_List or {} 
 
+-- Services
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,6 +37,65 @@ local function GetUsername(chatName)
         end
     end
     return chatName
+end
+
+-- [MAGIC FUNCTION: CONVERT RBXASSETID TO HTTPS]
+-- Ini adalah fungsi yang kamu temukan! Saya rapikan sedikit variabelnya.
+local function GetThumbnailURL(assetId)
+    if not assetId then return nil end
+    
+    local idNumber = assetId:match("rbxassetid://(%d+)") or assetId:match("^(%d+)$")
+    if not idNumber then return nil end
+
+    local apiUrl = string.format("https://thumbnails.roblox.com/v1/assets?assetIds=%s&type=Asset&size=420x420&format=Png", idNumber)
+    
+    local success, response = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(apiUrl))
+    end)
+
+    if success and response and response.data and response.data[1] then
+        return response.data[1].imageUrl
+    end
+    return nil
+end
+
+-- [FUNGSI PENCARI GAMBAR DALAM GAME]
+-- Mencari item di ReplicatedStorage fisch dan mengambil TextureID-nya
+local function GetItemImageDynamic(itemName)
+    -- Coba cari di folder resources (struktur umum Fisch)
+    local targetItem = nil
+    
+    -- Kita cari recursive di ReplicatedStorage (karena kadang folder pindah)
+    -- Tapi demi efisiensi, kita cek folder umum dulu
+    if ReplicatedStorage:FindFirstChild("resources") and ReplicatedStorage.resources:FindFirstChild("items") then
+        -- Cek di folder fish
+        if ReplicatedStorage.resources.items:FindFirstChild("fish") then
+            targetItem = ReplicatedStorage.resources.items.fish:FindFirstChild(itemName)
+        end
+        -- Cek di folder rods/items lain jika perlu (tapi kita fokus ikan)
+    end
+
+    if targetItem then
+        -- Jika item ketemu, ambil ID gambarnya (biasanya di property Texture, Image, atau Icon)
+        local rawId = targetItem:FindFirstChild("Texture") or targetItem.TextureId or targetItem:FindFirstChild("Icon")
+        
+        -- Kadang texture ada di dalam MeshPart
+        if not rawId and targetItem:IsA("MeshPart") then
+            rawId = targetItem.TextureID
+        end
+        
+        -- Kalau propertinya ketemu, convert pakai API
+        if rawId then
+            -- Kadang rawId itu Instance (Value), kita butuh .Value-nya
+            if typeof(rawId) == "Instance" and rawId:IsA("StringValue") then
+                return GetThumbnailURL(rawId.Value)
+            elseif typeof(rawId) == "string" then
+                return GetThumbnailURL(rawId)
+            end
+        end
+    end
+    
+    return nil -- Gagal nemu gambar
 end
 
 local function ParseDataSmart(cleanMsg)
@@ -80,7 +146,7 @@ local function SendWebhook(data, category)
     local TargetURL = ""
     local contentMsg = "" 
 
-    -- [TAGGING BUNYI (Di Luar Embed)]
+    -- [TAGGING BUNYI]
     local realUser = GetUsername(data.Player)
     if DiscordMap[realUser] then
         if category == "LEAVE" then
@@ -96,18 +162,25 @@ local function SendWebhook(data, category)
 
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
 
-    -- [SETUP VISUAL CUSTOM]
+    -- [SETUP VISUAL]
     local embedTitle = ""
     local embedColor = 3447003
     local embedFields = {} 
-    local embedThumbnail = { ["url"] = "https://i.imgur.com/GWx0mX9.jpeg" } 
-    local descriptionText = "" -- KOSONG (Minimalis)
+    local descriptionText = "" 
+    local embedThumbnail = nil 
+    
+    -- [AUTO IMAGE LOGIC]
+    -- Script mencari gambar secara otomatis dari nama item
+    if category == "SECRET" or category == "STONE" then
+        local autoImage = GetItemImageDynamic(data.Item)
+        if autoImage then
+            embedThumbnail = { ["url"] = autoImage }
+        end
+    end
 
     if category == "SECRET" then
-        -- [CUSTOM TITLE: Nama | Secret Caught!]
         embedTitle = data.Player .. " | Secret Caught!"
         embedColor = 3447003 
-        
         embedFields = {
             { ["name"] = "⚓ Item Name", ["value"] = data.Item, ["inline"] = true },
             { ["name"] = "🧬 Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
@@ -115,10 +188,8 @@ local function SendWebhook(data, category)
         }
 
     elseif category == "STONE" then
-        -- [CUSTOM TITLE: Nama | Get Ruby Gemstone!]
         embedTitle = data.Player .. " | Get Ruby Gemstone!"
         embedColor = 16753920 
-        
         embedFields = {
             { ["name"] = "💎 Stone Name", ["value"] = data.Item, ["inline"] = true },
             { ["name"] = "✨ Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
@@ -126,13 +197,11 @@ local function SendWebhook(data, category)
         }
 
     elseif category == "LEAVE" then
-        -- [CUSTOM TITLE: Display | @Username | has left the server.]
         local dispName = data.DisplayName or data.Player
         embedTitle = dispName .. " | @" .. data.Player .. " | has left the server."
-        
         embedColor = 16711680
-        embedThumbnail = nil -- No Thumbnail
-        descriptionText = "" -- Hapus deskripsi bawah, semua info sudah di judul.
+        embedThumbnail = nil 
+        descriptionText = "" 
 
     elseif category == "PLAYERS" then
         embedTitle = "👥 List Player In Server"
@@ -150,7 +219,7 @@ local function SendWebhook(data, category)
             ["description"] = descriptionText,
             ["color"] = embedColor,
             ["fields"] = embedFields, 
-            ["thumbnail"] = embedThumbnail, 
+            ["thumbnail"] = embedThumbnail,
             ["footer"] = { 
                 ["text"] = "XAL Automation System", 
                 ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" 
@@ -238,5 +307,5 @@ end)
 
 StartPlayerListLoop()
 
-StarterGui:SetCore("SendNotification", {Title="XAL | Minimalist Mode", Text="Loaded!", Duration=5})
-print("✅ XAL Webhook Minimalist Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL | Auto Image", Text="System Ready!", Duration=5})
+print("✅ XAL Webhook Auto-Image Loaded!")
