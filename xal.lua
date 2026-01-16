@@ -1,7 +1,7 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Pipe Format)
-   UPDATE: Format "Player | Item | Weight"
+   DESKRIPSI: Mesin Logika (Smart Pipe Format)
+   UPDATE: Memisahkan Mutasi (FROZEN | Synodontis) tapi Big tetap menempel.
 ]]
 
 -- 1. Validasi Config
@@ -35,20 +35,47 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI FORMATTER KHUSUS]
+-- [FUNGSI FORMATTER PINTAR]
 local function FormatToPipe(cleanMsg)
-    -- Hapus prefix [Server]: jika ada
+    -- Hapus prefix [Server]:
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- LOGIKA PEMISAH (REGEX)
-    -- Mengambil teks di posisi: [PLAYER] obtained a [ITEM] ([BERAT]) ...sisanya dibuang...
+    -- Ambil data mentah: Player, Item, Weight
     local player, item, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
 
     if player and item and weight then
-        -- Jika pola cocok, susun ulang jadi format Pipe
+        -- LOGIKA 1: Cek apakah depannya "Big"? (Big bukan mutasi, jadi jangan dipisah)
+        if string.sub(item, 1, 4) == "Big " then
+             return player .. " | " .. item .. " | " .. weight
+        end
+
+        -- LOGIKA 2: Cek Daftar Mutasi Umum (Case Insensitive)
+        -- Tambahkan nama mutasi lain di sini jika ada yang kurang
+        local mutations = {
+            "Shiny", "Frozen", "Negative", "Aurora", "Golden", 
+            "Radioactive", "Sinister", "Albino", "Dark", "Mythic", "Electric"
+        }
+
+        for _, mut in pairs(mutations) do
+            -- Cek apakah nama item diawali dengan salah satu kata mutasi di atas + spasi
+            -- Contoh: "FROZEN " ada di awal "FROZEN Synodontis"
+            local s, e = string.find(string.lower(item), "^" .. string.lower(mut) .. " ")
+            
+            if s then
+                -- KETEMU MUTASI! Pisahkan.
+                local foundMutation = string.sub(item, s, e-1) -- Ambil teks mutasi asli (FROZEN)
+                local realItemName = string.sub(item, e+1)     -- Ambil sisa nama (Synodontis)
+                
+                -- Format Baru: Player | Mutasi | NamaItem | Berat
+                return player .. " | " .. foundMutation .. " | " .. realItemName .. " | " .. weight
+            end
+        end
+
+        -- LOGIKA 3: Default (Jika tidak ada mutasi atau Big)
+        -- Format: Player | Item | Berat
         return player .. " | " .. item .. " | " .. weight
     else
-        -- Jika pola gagal (misal format game berubah), kembalikan pesan asli
+        -- Jika pola kalimat gagal dibaca, kembalikan pesan asli
         return msg
     end
 end
@@ -95,7 +122,7 @@ local function CheckAndSend(msg)
     
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
-        -- Ubah ke format Pipe: "Player | Item | Weight"
+        -- Panggil fungsi format pintar kita
         local finalMsg = FormatToPipe(cleanMsg)
 
         -- Cek Secret
@@ -135,5 +162,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Pipe Mode", Text="Format: Player | Item | Weight", Duration=5})
-print("✅ XAL Pipe Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Mutation", Text="Format: Player | Mutasi | Item | Kg", Duration=5})
+print("✅ XAL Mutation Logic Loaded!")
