@@ -1,7 +1,7 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: Mesin Logika (Simple & Clean Format)
-   UPDATE: Menghapus "[Server]:" dan menyingkat "1/15K chance"
+   DESKRIPSI: Mesin Logika (Pipe Format)
+   UPDATE: Format "Player | Item | Weight"
 ]]
 
 -- 1. Validasi Config
@@ -35,19 +35,25 @@ local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
 end
 
--- [FUNGSI FORMATTER BARU]
-local function FormatMessage(cleanMsg)
-    -- 1. Hapus awalan "[Server]: "
+-- [FUNGSI FORMATTER KHUSUS]
+local function FormatToPipe(cleanMsg)
+    -- Hapus prefix [Server]: jika ada
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     
-    -- 2. Ubah "with a 1 in ... chance!" menjadi "1/... chance!"
-    -- Contoh: "with a 1 in 15K chance!" -> "1/15K chance!"
-    msg = string.gsub(msg, "with a 1 in ", "1/")
-    
-    return msg
+    -- LOGIKA PEMISAH (REGEX)
+    -- Mengambil teks di posisi: [PLAYER] obtained a [ITEM] ([BERAT]) ...sisanya dibuang...
+    local player, item, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
+
+    if player and item and weight then
+        -- Jika pola cocok, susun ulang jadi format Pipe
+        return player .. " | " .. item .. " | " .. weight
+    else
+        -- Jika pola gagal (misal format game berubah), kembalikan pesan asli
+        return msg
+    end
 end
 
-local function SendWebhook(formattedMsg, category)
+local function SendWebhook(finalMsg, category)
     if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then return end
 
     local embedTitle = "🐟 XAL FISH ALERT!"
@@ -66,8 +72,7 @@ local function SendWebhook(formattedMsg, category)
         ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
         ["embeds"] = {{
             ["title"] = embedTitle,
-            -- Di sini kita pakai pesan yang sudah dipersingkat
-            ["description"] = "New Item Caught !\n\n**" .. formattedMsg .. "**",
+            ["description"] = "New Item Caught !\n\n**" .. finalMsg .. "**",
             ["color"] = embedColor,
             ["footer"] = { ["text"] = "XAL Webhook" },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
@@ -90,8 +95,8 @@ local function CheckAndSend(msg)
     
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
-        -- Format pesan sesuai request (Hapus Server & Singkat Chance)
-        local finalMsg = FormatMessage(cleanMsg)
+        -- Ubah ke format Pipe: "Player | Item | Weight"
+        local finalMsg = FormatToPipe(cleanMsg)
 
         -- Cek Secret
         for _, name in pairs(SecretList) do
@@ -130,5 +135,5 @@ if ChatEvents then
     end
 end
 
-StarterGui:SetCore("SendNotification", {Title="XAL Simple", Text="Clean Format Loaded!", Duration=5})
-print("✅ XAL Simple Logic Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Pipe Mode", Text="Format: Player | Item | Weight", Duration=5})
+print("✅ XAL Pipe Logic Loaded!")
