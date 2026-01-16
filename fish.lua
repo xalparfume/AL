@@ -1,17 +1,14 @@
---[[ 
-    -------------------------------------------------------
-    FISH IT DISCORD NOTIFIER (GITHUB VERSION)
-    -------------------------------------------------------
-    Cara Pakai:
-    1. Ganti variable 'Webhook_URL' di bawah dengan URL baru kamu.
-    2. Save/Commit di GitHub.
-    3. Jalankan via loadstring di Delta.
+--[[
+    FISH IT NOTIFIER - CLEAN TEXT VERSION
+    Fitur: 
+    - Auto Hapus kode HTML/RichText (<b>, <font>, dll) agar rapi di Discord
+    - Headless (Ringan tanpa UI)
+    - Notifikasi Startup
 ]]
 
--- >> MASUKKAN URL WEBHOOK DI SINI <<
+-- 1. KONFIGURASI
 local Webhook_URL = "https://discord.com/api/webhooks/1454735553638563961/C0KfomZhdu3KjmaqPx4CTi6NHbhIjcLaX_HpeSKqs66HUc179MQ9Ha_weV_v8zl1MjYK"
 
--- Daftar Ikan (Cukup nama dasar, varian seperti 'Shiny' akan otomatis terdeteksi)
 local SecretFishList = {
     "Orca",
     "Crystal Crab",
@@ -28,60 +25,56 @@ local SecretFishList = {
     "Ghost Shark",
     "Megalodon",
     "Skeleton Narwhal",
-    "GEMSTONE Ruby",
     "Ruby",
-    "Synodontis",
-    -- Tambahkan nama lain di sini jika ada update baru
 }
 
 -- =======================================================
--- JANGAN UBAH KODE DI BAWAH INI KECUALI PAHAM LUA
+-- LOGIKA SCRIPT
 -- =======================================================
 
 local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
--- Fungsi Kirim Webhook
-local function SendWebhook(msgContent)
-    if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then
-        warn("Webhook URL belum diisi di Script GitHub!")
-        return
-    end
+-- >> FUNGSI PEMBERSIH TEKS (BARU) <<
+local function StripTags(str)
+    -- Menghapus semua teks yang ada di dalam kurung siku <...>
+    -- Contoh: <font color="red">Ikan</font> menjadi "Ikan"
+    return string.gsub(str, "<[^>]+>", "")
+end
+
+local function SendWebhook(cleanMsg)
+    if Webhook_URL == "" or string.find(Webhook_URL, "MASUKKAN_URL") then return end
 
     local embedData = {
         ["username"] = "Fish It Spy",
         ["avatar_url"] = "https://i.imgur.com/4M7IwwP.png",
         ["embeds"] = {{
             ["title"] = "🚨 SECRET FISH ALERT!",
-            ["description"] = "Pesan Sistem Terdeteksi:\n\n**" .. msgContent .. "**",
-            ["color"] = 16711680, -- Merah
+            ["description"] = "Pesan Sistem Terdeteksi:\n\n**" .. cleanMsg .. "**",
+            ["color"] = 16711680,
             ["footer"] = { ["text"] = "Server Job ID: " .. game.JobId },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
 
-    local success, response = pcall(function()
-        httpRequest({
-            Url = Webhook_URL,
-            Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body = HttpService:JSONEncode(embedData)
-        })
-    end)
-    
-    if not success then warn("Gagal kirim webhook: " .. tostring(response)) end
+    httpRequest({
+        Url = Webhook_URL,
+        Method = "POST",
+        Headers = { ["Content-Type"] = "application/json" },
+        Body = HttpService:JSONEncode(embedData)
+    })
 end
 
--- Fungsi Analisa Pesan
 local function CheckAndSend(msg)
-    -- Ubah ke huruf kecil semua untuk pengecekan (biar tidak error typo besar/kecil)
-    local lowerMsg = string.lower(msg)
-    
-    -- Cek kata kunci "obtained" atau "chance"
+    -- 1. Bersihkan pesan dari kode HTML dulu
+    local cleanMsg = StripTags(msg) 
+    local lowerMsg = string.lower(cleanMsg)
+
+    -- 2. Cek kata kunci
     if string.find(lowerMsg, "obtained an") or string.find(lowerMsg, "chance!") then
         
         local isSecret = false
-        -- Loop cek apakah nama ikan ada di pesan
         for _, fishName in pairs(SecretFishList) do
             if string.find(lowerMsg, string.lower(fishName)) then
                 isSecret = true
@@ -89,15 +82,20 @@ local function CheckAndSend(msg)
             end
         end
 
-        -- Jika cocok, kirim pesan ASLI (yang hurufnya normal) ke Discord
         if isSecret then
-            SendWebhook(msg)
-            print(">> Webhook Terkirim: " .. msg)
+            -- Kirim pesan yang SUDAH DIBERSIHKAN
+            SendWebhook(cleanMsg)
+            
+            StarterGui:SetCore("SendNotification", {
+                Title = "Webhook Terkirim!",
+                Text = "Menemukan: " .. fishName, -- Menampilkan nama ikan saja biar pendek
+                Duration = 5
+            })
         end
     end
 end
 
--- Listener Chat (Support Chat Lama & Baru)
+-- LISTENER CHAT
 local ChatEvents = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 2)
 if ChatEvents then
     local OnMessage = ChatEvents:WaitForChild("OnMessageDoneFiltering", 2)
@@ -115,4 +113,10 @@ TextChatService.OnIncomingMessage = function(message)
     end
 end
 
-print("✅ Script Fish Notifier Berjalan! Memantau " .. #SecretFishList .. " ikan.")
+-- Notifikasi Tanda Aktif
+StarterGui:SetCore("SendNotification", {
+    Title = "Fish Notifier Clean Ver",
+    Text = "Siap memantau ikan secret...",
+    Icon = "rbxassetid://12543343358",
+    Duration = 5
+})
