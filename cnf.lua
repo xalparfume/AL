@@ -4,9 +4,12 @@ getgenv().CNF = {
     Webhook_List = "https://discordapp.com/api/webhooks/1461756167285117190/HeO0k35cPyKN-AA4d9TpLRZ7CDslwVngovlmzSsCsuBIjM_BDWyV3M2a8PB-77vAQ3Ri",
 
     DiscordID_List = {
-        ["salepmieayam"] = "123456789012345678",
-        ["xalparfume"]     = "987654321098765432",
-        ["iPengedar"]  = "112233445566778899",
+        ["salepmieayam"] = "1379072004690284564",
+        ["xalparfume"]     = "1379072004690284564",
+        ["iPengedar"]  = "1379072004690284564",
+        ["zapelass123"]  = "444484989661478932",
+        ["oliviagilbass"]  = "444484989661478932",
+        ["bHpwfROqaruC"]  = "444484989661478932",
     },
 
     SecretList = {
