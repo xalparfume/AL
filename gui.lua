@@ -24,7 +24,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 local oldUI = CoreGui:FindFirstChild("XAL_System")
@@ -121,32 +120,21 @@ local function CreateTab(name, target)
     TabBtn.TextSize = 10
     TabBtn.ZIndex = 3
     Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-    
     TabBtn.MouseButton1Click:Connect(function()
         Page_Webhook.Visible = false; Page_Send.Visible = false; Page_Config.Visible = false; Page_Tag.Visible = false
         target.Visible = true
         for _, child in pairs(Sidebar:GetChildren()) do
-            if child:IsA("TextButton") then
-                child.TextColor3 = Color3.fromRGB(150, 150, 150)
-                child.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-            end
+            if child:IsA("TextButton") then child.TextColor3 = Color3.fromRGB(150, 150, 150); child.BackgroundColor3 = Color3.fromRGB(30, 30, 30) end
         end
-        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255); TabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     end)
 end
 
-CreateTab("Webhook", Page_Webhook)
-CreateTab("Send", Page_Send)
-CreateTab("Config", Page_Config)
-CreateTab("Tag Discord", Page_Tag)
+CreateTab("Webhook", Page_Webhook); CreateTab("Send", Page_Send); CreateTab("Config", Page_Config); CreateTab("Tag Discord", Page_Tag)
 
 local function CreateToggle(parent, text, default, callback)
     local Frame = Instance.new("Frame", parent)
-    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Frame.BackgroundTransparency = 0.3
-    Frame.Size = UDim2.new(1, 0, 0, 26)
-    Frame.ZIndex = 4
+    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Frame.BackgroundTransparency = 0.3; Frame.Size = UDim2.new(1, 0, 0, 26); Frame.ZIndex = 4
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
     local Label = Instance.new("TextLabel", Frame)
     Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 8, 0, 0); Label.Size = UDim2.new(0, 140, 1, 0)
@@ -156,10 +144,7 @@ local function CreateToggle(parent, text, default, callback)
     Switch.Position = UDim2.new(1, -40, 0.5, -8); Switch.Size = UDim2.new(0, 32, 0, 16); Switch.Text = ""; Switch.ZIndex = 5
     Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
     local Circle = Instance.new("Frame", Switch)
-    Circle.BackgroundColor3 = Color3.new(1, 1, 1)
-    Circle.Position = default and UDim2.new(1, -14, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)
-    Circle.Size = UDim2.new(0, 10, 0, 10)
-    Circle.ZIndex = 6
+    Circle.BackgroundColor3 = Color3.new(1, 1, 1); Circle.Position = default and UDim2.new(1, -14, 0.5, -5) or UDim2.new(0, 2, 0.5, -5); Circle.Size = UDim2.new(0, 10, 0, 10); Circle.ZIndex = 6
     Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
     Switch.MouseButton1Click:Connect(function()
         local n = not (Switch.BackgroundColor3 == Color3.fromRGB(0, 170, 0))
@@ -173,8 +158,7 @@ local function CreateAction(parent, text, color, callback)
     local Btn = Instance.new("TextButton", parent)
     Btn.BackgroundColor3 = color; Btn.BackgroundTransparency = 0.1; Btn.Size = UDim2.new(1, 0, 0, 24); Btn.ZIndex = 4
     Btn.Font = Enum.Font.GothamBold; Btn.Text = text; Btn.TextColor3 = Color3.new(1, 1, 1); Btn.TextSize = 11
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
-    Btn.MouseButton1Click:Connect(callback)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6); Btn.MouseButton1Click:Connect(callback)
 end
 
 local function CreateInput(parent, placeholder, default, callback)
@@ -187,14 +171,12 @@ local function CreateInput(parent, placeholder, default, callback)
     local Input = Instance.new("TextBox", Frame)
     Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 8, 0, 20); Input.Size = UDim2.new(1, -16, 0, 20); Input.ZIndex = 5
     Input.Font = Enum.Font.Gotham; Input.Text = default; Input.PlaceholderText = "Paste URL..."; Input.TextColor3 = Color3.new(1, 1, 1); Input.TextSize = 10; Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
-    Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 4)
-    Input.FocusLost:Connect(function() callback(Input.Text) end)
+    Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 4); Input.FocusLost:Connect(function() callback(Input.Text) end)
 end
 
 for i = 1, 20 do
     local rowData = TagList[i]
-    local Row = Instance.new("Frame", Page_Tag)
-    Row.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Row.BackgroundTransparency = 0.3; Row.Size = UDim2.new(1, 0, 0, 30); Row.ZIndex = 4
+    local Row = Instance.new("Frame", Page_Tag); Row.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Row.BackgroundTransparency = 0.3; Row.Size = UDim2.new(1, 0, 0, 30); Row.ZIndex = 4
     Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 6)
     local Num = Instance.new("TextLabel", Row); Num.BackgroundTransparency = 1; Num.Position = UDim2.new(0, 5, 0, 0); Num.Size = UDim2.new(0, 15, 1, 0); Num.Font = "GothamBold"; Num.Text = i.."."; Num.TextColor3 = Color3.new(1,1,1); Num.TextSize = 10; Num.ZIndex = 5
     local UserInput = Instance.new("TextBox", Row); UserInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); UserInput.Position = UDim2.new(0, 25, 0.5, -10); UserInput.Size = UDim2.new(0, 75, 0, 20); UserInput.Font = "Gotham"; UserInput.Text = rowData[1]; UserInput.PlaceholderText = "User"; UserInput.TextColor3 = Color3.new(1,1,1); UserInput.TextSize = 9; UserInput.ZIndex = 5; UserInput.ClearTextOnFocus = false; Instance.new("UICorner", UserInput).CornerRadius = UDim.new(0, 4)
@@ -205,7 +187,7 @@ end
 
 CreateToggle(Page_Webhook, "Secret Caught", true, function(v) Settings.SecretEnabled = v end)
 CreateToggle(Page_Webhook, "Ruby Gemstone", true, function(v) Settings.RubyEnabled = v end)
-CreateToggle(Page_Webhook, "Player Leave", true, function(v) Settings.LeaveEnabled = v end)
+CreateToggle(Page_Webhook, "Player Leave", true, function(v) Settings.LeaveEnabled = v v end)
 
 CreateAction(Page_Send, "Send Player List", Color3.fromRGB(0, 100, 200), function()
     local all = Players:GetPlayers(); local str = "Current Players (" .. #all .. "):\n\n"
@@ -288,7 +270,7 @@ local function SendWebhook(data, category)
     local TargetURL = ""; local contentMsg = ""; local realUser = GetUsername(data.Player)
     local discordId = nil
     for i = 1, 20 do if TagList[i][1] ~= "" and string.lower(TagList[i][1]) == string.lower(realUser) then discordId = TagList[i][2]; break end end
-    if discordId then if category == "LEAVE" then contentMsg = "User Left: <@" .. discordId .. ">" else contentMsg = "GG! <@" .. discordId .. ">" end end
+    if discordId and discordId ~= "" then if category == "LEAVE" then contentMsg = "User Left: <@" .. discordId .. ">" else contentMsg = "GG! <@" .. discordId .. ">" end end
     if category == "LEAVE" then TargetURL = Current_Webhook_Leave elseif category == "PLAYERS" then TargetURL = Current_Webhook_List else TargetURL = Current_Webhook_Fish end
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
     local embedTitle = ""; local embedColor = 3447003; local descriptionText = "" 
