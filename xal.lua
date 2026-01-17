@@ -146,6 +146,7 @@ local function SendWebhook(data, category)
 
     local embedData = {
         ["username"] = "XAL Notifications!",
+        ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
         ["content"] = contentMsg, 
         ["embeds"] = {{
             ["title"] = embedTitle,
