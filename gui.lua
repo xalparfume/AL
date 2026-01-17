@@ -6,6 +6,7 @@
    - Kolom Input Webhook (Fish, Leave, List) bisa diedit langsung di GUI.
    - URL Webhook bersifat dinamis (bisa diubah saat script jalan).
    - Tampilan tetap Compact (330x180), Rounded, & Transparan.
+   - [NEW] Semua sudut GUI (Header, Sidebar, Button) kini membulat (Rounded 12px) seragam.
 ]]
 
 if not getgenv().CNF then return end
@@ -50,6 +51,9 @@ ScreenGui.Name = "XAL_System"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+-- [VARIABLE] GLOBAL CORNER RADIUS (Agar semua sudut sama)
+local GlobalRadius = UDim.new(0, 12)
+
 -- DOWNLOAD ICON IMGUR
 local function GetCustomIcon()
     local url = "https://i.imgur.com/GWx0mX9.jpeg"
@@ -81,7 +85,7 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 14) 
+MainCorner.CornerRadius = GlobalRadius -- Pakai Global Radius
 MainCorner.Parent = MainFrame
 
 -- HEADER
@@ -91,6 +95,11 @@ Header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Header.BackgroundTransparency = 0.15 
 Header.Size = UDim2.new(1, 0, 0, 25) 
 Header.BorderSizePixel = 0
+
+-- [UPDATE] Header Corner
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = GlobalRadius
+HeaderCorner.Parent = Header
 
 local TitleLab = Instance.new("TextLabel")
 TitleLab.Parent = Header
@@ -120,6 +129,11 @@ Sidebar.BackgroundTransparency = 0.15
 Sidebar.Position = UDim2.new(0, 0, 0, 25)
 Sidebar.Size = UDim2.new(0, 90, 1, -25) 
 Sidebar.BorderSizePixel = 0
+
+-- [UPDATE] Sidebar Corner
+local SidebarCorner = Instance.new("UICorner")
+SidebarCorner.CornerRadius = GlobalRadius
+SidebarCorner.Parent = Sidebar
 
 local ContentContainer = Instance.new("Frame")
 ContentContainer.Parent = MainFrame
@@ -171,7 +185,7 @@ local function CreateTab(name, pageObject)
     TabBtn.TextSize = 12 
     
     local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 6) 
+    TabCorner.CornerRadius = GlobalRadius -- Pakai Global Radius
     TabCorner.Parent = TabBtn
     
     TabBtn.MouseButton1Click:Connect(function()
@@ -211,7 +225,7 @@ local function CreatePremiumToggle(parent, text, defaultState, callback)
     Frame.BackgroundTransparency = 0.3 
     Frame.Size = UDim2.new(1, 0, 0, 26) 
     local FCorner = Instance.new("UICorner")
-    FCorner.CornerRadius = UDim.new(0, 6)
+    FCorner.CornerRadius = GlobalRadius -- Pakai Global Radius
     FCorner.Parent = Frame
     local Label = Instance.new("TextLabel")
     Label.Parent = Frame
@@ -265,7 +279,7 @@ local function CreateActionButton(parent, text, color, callback)
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.TextSize = 11 
     local BCorner = Instance.new("UICorner")
-    BCorner.CornerRadius = UDim.new(0, 6)
+    BCorner.CornerRadius = GlobalRadius -- Pakai Global Radius
     BCorner.Parent = Btn
     Btn.MouseButton1Click:Connect(callback)
     return Btn
@@ -280,7 +294,7 @@ local function CreateInputBox(parent, placeholder, defaultVal, callback)
     Frame.Size = UDim2.new(1, 0, 0, 45) -- Tinggi 45px (Label + Input)
     
     local FCorner = Instance.new("UICorner")
-    FCorner.CornerRadius = UDim.new(0, 6)
+    FCorner.CornerRadius = GlobalRadius -- Pakai Global Radius
     FCorner.Parent = Frame
     
     local Label = Instance.new("TextLabel")
@@ -309,7 +323,7 @@ local function CreateInputBox(parent, placeholder, defaultVal, callback)
     Input.ClipsDescendants = true
     
     local ICorner = Instance.new("UICorner")
-    ICorner.CornerRadius = UDim.new(0, 4)
+    ICorner.CornerRadius = GlobalRadius -- Pakai Global Radius
     ICorner.Parent = Input
     
     Input.FocusLost:Connect(function()
@@ -355,7 +369,7 @@ CreateActionButton(Page_Send, "Check Webhook 1 (Fish)", Color3.fromRGB(80, 80, 8
         -- [UPDATE] Gunakan Variabel Dinamis
         httpRequest({ Url = Current_Webhook_Fish, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
     end)
-end)
+end
 
 CreateActionButton(Page_Send, "Check Webhook 2 (Leave)", Color3.fromRGB(80, 80, 80), function()
     task.spawn(function()
@@ -367,7 +381,7 @@ CreateActionButton(Page_Send, "Check Webhook 2 (Leave)", Color3.fromRGB(80, 80, 
         -- [UPDATE] Gunakan Variabel Dinamis
         httpRequest({ Url = Current_Webhook_Leave, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
     end)
-end)
+end
 
 CreateActionButton(Page_Send, "Check Webhook 3 (List)", Color3.fromRGB(80, 80, 80), function()
     task.spawn(function()
@@ -379,7 +393,7 @@ CreateActionButton(Page_Send, "Check Webhook 3 (List)", Color3.fromRGB(80, 80, 8
         -- [UPDATE] Gunakan Variabel Dinamis
         httpRequest({ Url = Current_Webhook_List, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
     end)
-end)
+end
 
 -- ISI MENU TAB 3: CONFIG (BARU)
 CreateInputBox(Page_Config, "Fish Webhook URL", Current_Webhook_Fish, function(val)
@@ -630,5 +644,5 @@ Players.PlayerRemoving:Connect(function(player)
     end)
 end)
 
-StarterGui:SetCore("SendNotification", {Title="XAL Final", Text="Config Menu Added!", Duration=5})
+StarterGui:SetCore("SendNotification", {Title="XAL Final", Text="GUI Corners Updated!", Duration=5})
 print("✅ XAL Final Loaded!")
