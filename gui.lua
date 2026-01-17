@@ -1,10 +1,9 @@
 --[[ 
    FILENAME: xal.lua
-   DESKRIPSI: FINAL VERSION (GUI Control + Manual List)
+   DESKRIPSI: FINAL VERSION (Premium UI + Custom Icon Image)
    UPDATE: 
-   - Menghapus fitur Auto-Loop Player List 30 menit.
-   - List Player sekarang HANYA dikirim jika tombol di GUI ditekan.
-   - Fitur Avatar Profile, Logic Mutasi, dan Mobile View tetap aman.
+   - Menambahkan fitur "GetCustomAsset" untuk mendownload logo XAL dari Imgur.
+   - Icon Minimize sekarang menggunakan Logo XAL asli (bukan transparan).
 ]]
 
 if not getgenv().CNF then return end
@@ -23,6 +22,7 @@ local Settings = {
     RubyEnabled = true
 }
 
+-- Services
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -33,159 +33,318 @@ local TweenService = game:GetService("TweenService")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 -- =======================================================
--- GUI SECTION
+-- GUI SECTION (PREMIUM STYLE)
 -- =======================================================
 
-if CoreGui:FindFirstChild("XAL_Control") then
-    CoreGui.XAL_Control:Destroy()
+if CoreGui:FindFirstChild("XAL_System") then
+    CoreGui.XAL_System:Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XAL_Control"
+ScreenGui.Name = "XAL_System"
 ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- 1. MAIN FRAME
+-- FUNGSI DOWNLOAD GAMBAR (Agar bisa pakai link Imgur di GUI Roblox)
+local function GetCustomIcon()
+    local url = "https://i.imgur.com/GWx0mX9.jpeg"
+    local fileName = "XAL_Logo_Icon.png"
+    
+    -- Cek apakah executor support menyimpan file & custom asset
+    if getcustomasset and writefile and isfile then
+        local success, result = pcall(function()
+            if not isfile(fileName) then
+                -- Download gambar jika belum ada
+                local response = httpRequest({Url = url, Method = "GET"})
+                if response and response.Body then
+                    writefile(fileName, response.Body)
+                end
+            end
+            return getcustomasset(fileName)
+        end)
+        if success and result then
+            return result
+        end
+    end
+    -- Fallback jika gagal (Pakai icon gear default)
+    return "rbxassetid://15264364477" 
+end
+
+-- 1. MAIN FRAME (WADAH UTAMA)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) 
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25) 
 MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.05, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125) 
+MainFrame.Size = UDim2.new(0, 450, 0, 250) 
+MainFrame.ClipsDescendants = true
 MainFrame.Active = true
-MainFrame.Draggable = true 
+MainFrame.Draggable = true
 
--- JUDUL + MINIMIZE
-local TitleBar = Instance.new("Frame")
-TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0) 
-TitleBar.Size = UDim2.new(1, 0, 0, 25)
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Parent = TitleBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-TitleLabel.Size = UDim2.new(1, -40, 1, 0)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "XAL CONTROLLER"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 12
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- HEADER
+local Header = Instance.new("Frame")
+Header.Parent = MainFrame
+Header.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BorderSizePixel = 0
 
-local MinBtn = Instance.new("TextButton")
-MinBtn.Parent = TitleBar
+local TitleLab = Instance.new("TextLabel")
+TitleLab.Parent = Header
+TitleLab.BackgroundTransparency = 1
+TitleLab.Position = UDim2.new(0, 15, 0, 0)
+TitleLab.Size = UDim2.new(0, 200, 1, 0)
+TitleLab.Font = Enum.Font.GothamBold
+TitleLab.Text = "XAL PS Monitoring"
+TitleLab.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLab.TextSize = 16
+TitleLab.TextXAlignment = Enum.TextXAlignment.Left
+
+-- TOMBOL MINIMIZE (HEADER)
+local MinBtn = Instance.new("ImageButton")
+MinBtn.Parent = Header
 MinBtn.BackgroundTransparency = 1
-MinBtn.Position = UDim2.new(1, -25, 0, 0)
-MinBtn.Size = UDim2.new(0, 25, 0, 25)
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.Text = "-"
-MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinBtn.TextSize = 18
+MinBtn.Position = UDim2.new(1, -35, 0.5, -10)
+MinBtn.Size = UDim2.new(0, 20, 0, 20)
+MinBtn.Image = "rbxassetid://6031094678" -- Icon Minus
+MinBtn.ImageColor3 = Color3.fromRGB(200, 200, 200)
 
--- WADAH TOMBOL
-local Container = Instance.new("Frame")
-Container.Parent = MainFrame
-Container.BackgroundTransparency = 1
-Container.Position = UDim2.new(0, 10, 0, 35)
-Container.Size = UDim2.new(1, -20, 1, -45)
+-- SIDEBAR
+local Sidebar = Instance.new("Frame")
+Sidebar.Parent = MainFrame
+Sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Sidebar.Position = UDim2.new(0, 0, 0, 40)
+Sidebar.Size = UDim2.new(0, 120, 1, -40)
+Sidebar.BorderSizePixel = 0
 
-local function CreateToggle(name, text, defaultState, callback)
+-- CONTAINER KONTEN
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Parent = MainFrame
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Position = UDim2.new(0, 130, 0, 50) 
+ContentContainer.Size = UDim2.new(1, -140, 1, -60)
+
+-- PAGE 1 & 2
+local Page_Webhook = Instance.new("ScrollingFrame")
+Page_Webhook.Parent = ContentContainer
+Page_Webhook.BackgroundTransparency = 1
+Page_Webhook.Size = UDim2.new(1, 0, 1, 0)
+Page_Webhook.ScrollBarThickness = 2
+Page_Webhook.Visible = true 
+
+local WebLayout = Instance.new("UIListLayout")
+WebLayout.Parent = Page_Webhook
+WebLayout.Padding = UDim.new(0, 8)
+
+local Page_Send = Instance.new("ScrollingFrame")
+Page_Send.Parent = ContentContainer
+Page_Send.BackgroundTransparency = 1
+Page_Send.Size = UDim2.new(1, 0, 1, 0)
+Page_Send.ScrollBarThickness = 2
+Page_Send.Visible = false 
+
+local SendLayout = Instance.new("UIListLayout")
+SendLayout.Parent = Page_Send
+SendLayout.Padding = UDim.new(0, 8)
+
+-- FUNGSI TAB
+local function CreateTab(name, pageObject)
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Parent = Sidebar
+    TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabBtn.Size = UDim2.new(0, 100, 0, 30)
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.Text = name
+    TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+    TabBtn.TextSize = 14
+    
+    local TabCorner = Instance.new("UICorner")
+    TabCorner.CornerRadius = UDim.new(0, 6)
+    TabCorner.Parent = TabBtn
+
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, child in pairs(Sidebar:GetChildren()) do
+            if child:IsA("TextButton") then
+                child.TextColor3 = Color3.fromRGB(150, 150, 150)
+                child.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            end
+        end
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        
+        Page_Webhook.Visible = false
+        Page_Send.Visible = false
+        pageObject.Visible = true
+    end)
+    
+    local UIList = Sidebar:FindFirstChild("UIListLayout") or Instance.new("UIListLayout", Sidebar)
+    UIList.Padding = UDim.new(0, 5)
+    UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    local UIPad = Sidebar:FindFirstChild("UIPadding") or Instance.new("UIPadding", Sidebar)
+    UIPad.PaddingTop = UDim.new(0, 10)
+
+    if name == "Webhook" then
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end
+end
+
+CreateTab("Webhook", Page_Webhook)
+CreateTab("Send", Page_Send)
+
+-- FUNGSI TOGGLE PREMIUM
+local function CreatePremiumToggle(parent, text, defaultState, callback)
     local Frame = Instance.new("Frame")
-    Frame.Parent = Container
-    Frame.BackgroundTransparency = 1
-    Frame.Size = UDim2.new(1, 0, 0, 30)
+    Frame.Parent = parent
+    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Frame.Size = UDim2.new(1, 0, 0, 40)
+    
+    local FCorner = Instance.new("UICorner")
+    FCorner.CornerRadius = UDim.new(0, 6)
+    FCorner.Parent = Frame
     
     local Label = Instance.new("TextLabel")
     Label.Parent = Frame
     Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(0.7, 0, 1, 0)
-    Label.Font = Enum.Font.GothamSemibold
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.Size = UDim2.new(0, 200, 1, 0)
+    Label.Font = Enum.Font.GothamMedium
     Label.Text = text
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.TextSize = 12
+    Label.TextSize = 14
     Label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local Button = Instance.new("TextButton")
-    Button.Parent = Frame
-    Button.BackgroundColor3 = defaultState and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
-    Button.Position = UDim2.new(0.75, 0, 0.15, 0)
-    Button.Size = UDim2.new(0, 40, 0, 20)
-    Button.Font = Enum.Font.GothamBold
-    Button.Text = defaultState and "ON" or "OFF"
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 10
     
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 4)
-    Corner.Parent = Button
-
-    Button.MouseButton1Click:Connect(function()
-        local newState = not (Button.Text == "ON")
-        Button.Text = newState and "ON" or "OFF"
-        Button.BackgroundColor3 = newState and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+    local Switch = Instance.new("TextButton")
+    Switch.Parent = Frame
+    Switch.BackgroundColor3 = defaultState and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(60, 60, 60)
+    Switch.Position = UDim2.new(1, -60, 0.5, -10)
+    Switch.Size = UDim2.new(0, 45, 0, 20)
+    Switch.Text = ""
+    
+    local SCorner = Instance.new("UICorner")
+    SCorner.CornerRadius = UDim.new(1, 0)
+    SCorner.Parent = Switch
+    
+    local Circle = Instance.new("Frame")
+    Circle.Parent = Switch
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    if defaultState then Circle.Position = UDim2.new(1, -18, 0.5, -7) else Circle.Position = UDim2.new(0, 2, 0.5, -7) end
+    Circle.Size = UDim2.new(0, 14, 0, 14)
+    local CCorner = Instance.new("UICorner")
+    CCorner.CornerRadius = UDim.new(1, 0)
+    CCorner.Parent = Circle
+    
+    Switch.MouseButton1Click:Connect(function()
+        local newState = not (Switch.BackgroundColor3 == Color3.fromRGB(0, 170, 0))
+        if newState then
+            Switch.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+            Circle:TweenPosition(UDim2.new(1, -18, 0.5, -7), "Out", "Sine", 0.1, true)
+        else
+            Switch.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            Circle:TweenPosition(UDim2.new(0, 2, 0.5, -7), "Out", "Sine", 0.1, true)
+        end
         callback(newState)
     end)
-    
-    local UIList = Container:FindFirstChild("UIListLayout") or Instance.new("UIListLayout", Container)
-    UIList.Padding = UDim.new(0, 5)
-    
-    return Button
 end
 
-CreateToggle("Secret", "Secret Caught", true, function(state)
-    Settings.SecretEnabled = state
+-- FUNGSI BUTTON ACTION
+local function CreateActionButton(parent, text, color, callback)
+    local Btn = Instance.new("TextButton")
+    Btn.Parent = parent
+    Btn.BackgroundColor3 = color
+    Btn.Size = UDim2.new(1, 0, 0, 35)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.Text = text
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 13
+    local BCorner = Instance.new("UICorner")
+    BCorner.CornerRadius = UDim.new(0, 6)
+    BCorner.Parent = Btn
+    Btn.MouseButton1Click:Connect(callback)
+    return Btn
+end
+
+-- ISI MENU
+CreatePremiumToggle(Page_Webhook, "Secret Caught", true, function(state) Settings.SecretEnabled = state end)
+CreatePremiumToggle(Page_Webhook, "Ruby Gemstone", true, function(state) Settings.RubyEnabled = state end)
+
+CreateActionButton(Page_Send, "Send List Player (Manual)", Color3.fromRGB(0, 100, 200), function()
+    local allPlayers = Players:GetPlayers()
+    local listStr = "Current Players (" .. #allPlayers .. "):\n\n"
+    for i, p in ipairs(allPlayers) do
+        listStr = listStr .. "**" .. i .. ". " .. p.DisplayName .. "** (@" .. p.Name .. ")\n"
+    end
+    task.spawn(function()
+        local payload = {
+            ["username"] = "XAL Notifications!",
+            ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
+            ["embeds"] = {{
+                ["title"] = "👥 Manual Player List",
+                ["description"] = listStr,
+                ["color"] = 5763719,
+                ["footer"] = { ["text"] = "XAL PS Monitoring", ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" }
+            }}
+        }
+        httpRequest({ Url = Webhook_List, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
+    end)
 end)
 
-CreateToggle("Ruby", "Ruby Gemstone", true, function(state)
-    Settings.RubyEnabled = state
+CreateActionButton(Page_Send, "Check Webhook 1 (Fish)", Color3.fromRGB(80, 80, 80), function()
+    task.spawn(function()
+        local payload = { content = "✅ **TEST:** Webhook 1 (Fish) Connected!" }
+        httpRequest({ Url = Webhook_Fish, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
+    end)
 end)
 
--- TOMBOL SEND LIST (MANUAL)
-local SendBtn = Instance.new("TextButton")
-SendBtn.Parent = Container
-SendBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-SendBtn.Size = UDim2.new(1, 0, 0, 30)
-SendBtn.Font = Enum.Font.GothamBold
-SendBtn.Text = "Send Player List"
-SendBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SendBtn.TextSize = 12
+CreateActionButton(Page_Send, "Check Webhook 2 (Leave)", Color3.fromRGB(80, 80, 80), function()
+    task.spawn(function()
+        local payload = { content = "✅ **TEST:** Webhook 2 (Leave) Connected!" }
+        httpRequest({ Url = Webhook_Leave, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
+    end)
+end)
 
-local SendCorner = Instance.new("UICorner")
-SendCorner.Parent = SendBtn
+CreateActionButton(Page_Send, "Check Webhook 3 (List)", Color3.fromRGB(80, 80, 80), function()
+    task.spawn(function()
+        local payload = { content = "✅ **TEST:** Webhook 3 (List) Connected!" }
+        httpRequest({ Url = Webhook_List, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(payload) })
+    end)
+end)
 
--- 2. ICON MINIMIZED
-local OpenBtn = Instance.new("ImageButton")
-OpenBtn.Name = "OpenIcon"
-OpenBtn.Parent = ScreenGui
-OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-OpenBtn.Position = UDim2.new(0.05, 0, 0.4, 0) 
-OpenBtn.Size = UDim2.new(0, 40, 0, 40)
-OpenBtn.Image = "rbxassetid://15264364477" 
-OpenBtn.Visible = false 
-OpenBtn.Active = true
-OpenBtn.Draggable = true 
+-- [ICON MINIMIZED DENGAN GAMBAR CUSTOM]
+local OpenIcon = Instance.new("ImageButton")
+OpenIcon.Name = "OpenIcon"
+OpenIcon.Parent = ScreenGui
+OpenIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Putih biar gambar jelas
+OpenIcon.BackgroundTransparency = 0 -- Tidak transparan agar bulat penuh
+OpenIcon.Position = UDim2.new(0.02, 0, 0.5, 0)
+OpenIcon.Size = UDim2.new(0, 50, 0, 50) -- Sedikit diperbesar
+OpenIcon.Image = GetCustomIcon() -- LOAD GAMBAR IMGUR DI SINI
+OpenIcon.Visible = false
+OpenIcon.Active = true
+OpenIcon.Draggable = true
 
-local IconCorner = Instance.new("UICorner")
-IconCorner.CornerRadius = UDim.new(1, 0) 
-IconCorner.Parent = OpenBtn
+local ICorner = Instance.new("UICorner")
+ICorner.CornerRadius = UDim.new(1, 0) -- Bulat Sempurna
+ICorner.Parent = OpenIcon
 
--- LOGIKA MINIMIZE
+-- MINIMIZE LOGIC
 MinBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
-    OpenBtn.Position = MainFrame.Position 
-    OpenBtn.Visible = true
+    OpenIcon.Position = MainFrame.Position
+    OpenIcon.Visible = true
 end)
 
-OpenBtn.MouseButton1Click:Connect(function()
-    OpenBtn.Visible = false
-    MainFrame.Position = OpenBtn.Position 
+OpenIcon.MouseButton1Click:Connect(function()
+    OpenIcon.Visible = false
+    MainFrame.Position = OpenIcon.Position
     MainFrame.Visible = true
 end)
 
-
--- =======================================================
--- LOGIC FUNCTIONS
--- =======================================================
+-- ================= LOGIC UTAMA =================
 
 local function StripTags(str)
     return string.gsub(str, "<[^>]+>", "")
@@ -218,7 +377,6 @@ local function ParseDataSmart(cleanMsg)
                 local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
                 if s > 1 then
                     local prefixRaw = string.sub(fullItem, 1, s - 1)
-                    
                     local checkMut = prefixRaw
                     checkMut = string.gsub(checkMut, "Big%s*", "")
                     checkMut = string.gsub(checkMut, "Shiny%s*", "")
@@ -248,7 +406,6 @@ local function ParseDataSmart(cleanMsg)
 end
 
 local function SendWebhook(data, category)
-    -- CHECK TOGGLE
     if category == "SECRET" and not Settings.SecretEnabled then return end
     if category == "STONE" and not Settings.RubyEnabled then return end
 
@@ -278,29 +435,22 @@ local function SendWebhook(data, category)
     if category == "SECRET" then
         embedTitle = data.Player .. " | Secret Caught!"
         embedColor = 3447003 
-        
         local lines = {}
         table.insert(lines, "⚓ Fish: **" .. data.Item .. "**")
-        
         if data.Mutation and data.Mutation ~= "None" then
             table.insert(lines, "🧬 Mutation: **" .. data.Mutation .. "**")
         end
-        
         table.insert(lines, "⚖️ Weight: **" .. data.Weight .. "**")
-        
         descriptionText = table.concat(lines, "\n")
 
     elseif category == "STONE" then
         embedTitle = data.Player .. " | Ruby Gemstone!"
         embedColor = 16753920 
-        
         local lines = {}
         table.insert(lines, "💎 Stone: **" .. data.Item .. "**")
-        
         if data.Mutation and data.Mutation ~= "None" then
             table.insert(lines, "✨ Mutation: **" .. data.Mutation .. "**")
         end
-        
         table.insert(lines, "⚖️ Weight: **" .. data.Weight .. "**")
         descriptionText = table.concat(lines, "\n")
 
@@ -318,7 +468,7 @@ local function SendWebhook(data, category)
 
     local embedData = {
         ["username"] = "XAL Notifications!",
-        ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg", -- Profile Pic Aktif!
+        ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
         ["content"] = contentMsg, 
         ["embeds"] = {{
             ["title"] = embedTitle,
@@ -342,20 +492,6 @@ local function SendWebhook(data, category)
         })
     end)
 end
-
--- LOGIKA MANUAL SEND LIST (Auto Loop Dihapus)
-SendBtn.MouseButton1Click:Connect(function()
-    local allPlayers = Players:GetPlayers()
-    local listStr = "Current Players (" .. #allPlayers .. "):\n\n"
-    
-    for i, p in ipairs(allPlayers) do
-        listStr = listStr .. "**" .. i .. ". " .. p.DisplayName .. "** (@" .. p.Name .. ")\n"
-    end
-    SendWebhook({ ListText = listStr }, "PLAYERS")
-    SendBtn.Text = "Sent!"
-    task.wait(1)
-    SendBtn.Text = "Send Player List"
-end)
 
 local function CheckAndSend(msg)
     local cleanMsg = StripTags(msg)
@@ -414,5 +550,5 @@ Players.PlayerRemoving:Connect(function(player)
     end)
 end)
 
-StarterGui:SetCore("SendNotification", {Title="XAL Controller", Text="Manual Mode Ready!", Duration=5})
-print("✅ XAL GUI Manual Mode Loaded!")
+StarterGui:SetCore("SendNotification", {Title="XAL Premium", Text="Icon Loaded!", Duration=5})
+print("✅ XAL Premium + Icon Loaded!")
