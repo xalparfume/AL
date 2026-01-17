@@ -24,6 +24,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 local oldUI = CoreGui:FindFirstChild("XAL_System")
@@ -187,7 +188,7 @@ end
 
 CreateToggle(Page_Webhook, "Secret Caught", true, function(v) Settings.SecretEnabled = v end)
 CreateToggle(Page_Webhook, "Ruby Gemstone", true, function(v) Settings.RubyEnabled = v end)
-CreateToggle(Page_Webhook, "Player Leave", true, function(v) Settings.LeaveEnabled = v v end)
+CreateToggle(Page_Webhook, "Player Leave", true, function(v) Settings.LeaveEnabled = v end)
 
 CreateAction(Page_Send, "Send Player List", Color3.fromRGB(0, 100, 200), function()
     local all = Players:GetPlayers(); local str = "Current Players (" .. #all .. "):\n\n"
