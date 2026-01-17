@@ -28,8 +28,8 @@ ScreenGui.Name = "XAL_System"
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BackgroundTransparency = 0.15
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -90)
-MainFrame.Size = UDim2.new(0, 330, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+MainFrame.Size = UDim2.new(0, 300, 0, 180)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
@@ -40,7 +40,7 @@ Header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Header.BackgroundTransparency = 0.15
 Header.Size = UDim2.new(1, 0, 0, 25)
 Header.BorderSizePixel = 0
-Header.ZIndex = 2
+Header.ZIndex = 5
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
 
 local TitleLab = Instance.new("TextLabel", Header)
@@ -52,6 +52,7 @@ TitleLab.Text = "XAL PS Monitoring"
 TitleLab.TextColor3 = Color3.new(1, 1, 1)
 TitleLab.TextSize = 13
 TitleLab.TextXAlignment = "Left"
+TitleLab.ZIndex = 6
 
 local MinBtn = Instance.new("ImageButton", Header)
 MinBtn.BackgroundTransparency = 1
@@ -59,6 +60,7 @@ MinBtn.Position = UDim2.new(1, -25, 0.5, -7)
 MinBtn.Size = UDim2.new(0, 14, 0, 14)
 MinBtn.Image = "rbxassetid://6031094678"
 MinBtn.ImageColor3 = Color3.fromRGB(200, 200, 200)
+MinBtn.ZIndex = 6
 
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -66,6 +68,7 @@ Sidebar.BackgroundTransparency = 0.15
 Sidebar.Position = UDim2.new(0, 0, 0, 0)
 Sidebar.Size = UDim2.new(0, 90, 1, 0)
 Sidebar.BorderSizePixel = 0
+Sidebar.ZIndex = 2
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
 
 local SideLayout = Instance.new("UIListLayout", Sidebar)
@@ -77,6 +80,7 @@ local ContentContainer = Instance.new("Frame", MainFrame)
 ContentContainer.BackgroundTransparency = 1
 ContentContainer.Position = UDim2.new(0, 95, 0, 30)
 ContentContainer.Size = UDim2.new(1, -100, 1, -35)
+ContentContainer.ZIndex = 3
 
 local function CreatePage(name)
     local Page = Instance.new("ScrollingFrame", ContentContainer)
@@ -87,6 +91,7 @@ local function CreatePage(name)
     Page.Visible = false
     Page.CanvasSize = UDim2.new(0, 0, 0, 0)
     Page.AutomaticCanvasSize = "Y"
+    Page.ZIndex = 4
     Instance.new("UIListLayout", Page).Padding = UDim.new(0, 4)
     return Page
 end
@@ -105,6 +110,7 @@ local function CreateTab(name, target)
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
     TabBtn.TextSize = 12
+    TabBtn.ZIndex = 3
     Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
     
     TabBtn.MouseButton1Click:Connect(function()
@@ -132,18 +138,20 @@ local function CreateToggle(parent, text, default, callback)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0.3
     Frame.Size = UDim2.new(1, 0, 0, 26)
+    Frame.ZIndex = 4
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
     local Label = Instance.new("TextLabel", Frame)
     Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 8, 0, 0); Label.Size = UDim2.new(0, 140, 1, 0)
-    Label.Font = Enum.Font.GothamMedium; Label.Text = text; Label.TextColor3 = Color3.new(1, 1, 1); Label.TextSize = 12; Label.TextXAlignment = "Left"
+    Label.Font = Enum.Font.GothamMedium; Label.Text = text; Label.TextColor3 = Color3.new(1, 1, 1); Label.TextSize = 12; Label.TextXAlignment = "Left"; Label.ZIndex = 5
     local Switch = Instance.new("TextButton", Frame)
     Switch.BackgroundColor3 = default and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(60, 60, 60)
-    Switch.Position = UDim2.new(1, -40, 0.5, -8); Switch.Size = UDim2.new(0, 32, 0, 16); Switch.Text = ""
+    Switch.Position = UDim2.new(1, -40, 0.5, -8); Switch.Size = UDim2.new(0, 32, 0, 16); Switch.Text = ""; Switch.ZIndex = 5
     Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
     local Circle = Instance.new("Frame", Switch)
     Circle.BackgroundColor3 = Color3.new(1, 1, 1)
     Circle.Position = default and UDim2.new(1, -14, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)
     Circle.Size = UDim2.new(0, 10, 0, 10)
+    Circle.ZIndex = 6
     Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
     Switch.MouseButton1Click:Connect(function()
         local n = not (Switch.BackgroundColor3 == Color3.fromRGB(0, 170, 0))
@@ -155,7 +163,7 @@ end
 
 local function CreateAction(parent, text, color, callback)
     local Btn = Instance.new("TextButton", parent)
-    Btn.BackgroundColor3 = color; Btn.BackgroundTransparency = 0.1; Btn.Size = UDim2.new(1, 0, 0, 24)
+    Btn.BackgroundColor3 = color; Btn.BackgroundTransparency = 0.1; Btn.Size = UDim2.new(1, 0, 0, 24); Btn.ZIndex = 4
     Btn.Font = Enum.Font.GothamBold; Btn.Text = text; Btn.TextColor3 = Color3.new(1, 1, 1); Btn.TextSize = 11
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
     Btn.MouseButton1Click:Connect(callback)
@@ -163,13 +171,13 @@ end
 
 local function CreateInput(parent, placeholder, default, callback)
     local Frame = Instance.new("Frame", parent)
-    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Frame.BackgroundTransparency = 0.3; Frame.Size = UDim2.new(1, 0, 0, 45)
+    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Frame.BackgroundTransparency = 0.3; Frame.Size = UDim2.new(1, 0, 0, 45); Frame.ZIndex = 4
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
     local Label = Instance.new("TextLabel", Frame)
-    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 8, 0, 2); Label.Size = UDim2.new(1, -16, 0, 15)
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 8, 0, 2); Label.Size = UDim2.new(1, -16, 0, 15); Label.ZIndex = 5
     Label.Font = Enum.Font.GothamMedium; Label.Text = placeholder; Label.TextColor3 = Color3.fromRGB(200, 200, 200); Label.TextSize = 10; Label.TextXAlignment = "Left"
     local Input = Instance.new("TextBox", Frame)
-    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 8, 0, 20); Input.Size = UDim2.new(1, -16, 0, 20)
+    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 8, 0, 20); Input.Size = UDim2.new(1, -16, 0, 20); Input.ZIndex = 5
     Input.Font = Enum.Font.Gotham; Input.Text = default; Input.PlaceholderText = "Paste URL..."; Input.TextColor3 = Color3.new(1, 1, 1); Input.TextSize = 10; Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 4)
     Input.FocusLost:Connect(function() callback(Input.Text) end)
