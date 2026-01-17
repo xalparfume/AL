@@ -1,12 +1,3 @@
---[[ 
-   FILENAME: xal.lua
-   DESKRIPSI: FINAL VERSION (Text-Based Icon "X" + Config Menu)
-   UPDATE: 
-   - Mengganti Icon Gambar menjadi Huruf "X" sesuai permintaan.
-   - Tetap menggunakan Tab Config untuk setting URL Webhook.
-   - Logika Filter 100% Original & Aman.
-]]
-
 if not getgenv().CNF then 
     warn("❌ XAL Error: CNF Not Found! Please run loader script first.")
     return 
@@ -23,7 +14,6 @@ local DiscordMap = Config.DiscordID_List or {}
 
 local Settings = { SecretEnabled = true, RubyEnabled = true, LeaveEnabled = true }
 
--- Services
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,7 +34,6 @@ ScreenGui.Name = "XAL_System"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- MAIN FRAME (330x180)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -60,7 +49,6 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 14) 
 MainCorner.Parent = MainFrame
 
--- HEADER
 local Header = Instance.new("Frame")
 Header.Parent = MainFrame
 Header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -78,7 +66,6 @@ TitleLab.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLab.TextSize = 13 
 TitleLab.TextXAlignment = Enum.TextXAlignment.Left
 
--- MINIMIZE BUTTON
 local MinBtn = Instance.new("ImageButton")
 MinBtn.Parent = Header
 MinBtn.BackgroundTransparency = 1
