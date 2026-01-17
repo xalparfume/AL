@@ -32,4 +32,4 @@ getgenv().CNF = {
     }
 }
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/xalparfume/AL/refs/heads/main/fish.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/xalparfume/AL/refs/heads/main/gui.lua"))()
