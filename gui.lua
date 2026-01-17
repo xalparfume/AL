@@ -24,7 +24,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
 local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 local oldUI = CoreGui:FindFirstChild("XAL_System")
@@ -200,18 +199,18 @@ CreateAction(Page_Send, "Send Player List", Color3.fromRGB(0, 100, 200), functio
 end)
 
 CreateAction(Page_Send, "Player Non PS", Color3.fromRGB(200, 100, 0), function()
-    local currentNames = {}
-    for _, p in ipairs(Players:GetPlayers()) do currentNames[string.lower(p.Name)] = true end
-    local missing = {}
-    for i=1, 20 do
-        local u = TagList[i][1]
-        if u ~= "" and not currentNames[string.lower(u)] then table.insert(missing, u) end
+    local current = {}
+    for _, p in ipairs(Players:GetPlayers()) do current[string.lower(p.Name)] = true end
+    local m = {}
+    for i = 1, 20 do
+        local name = TagList[i][1]
+        if name ~= "" and not current[string.lower(name)] then table.insert(m, name) end
     end
-    local listStr = "Missing Players (" .. #missing .. "):\n\n"
-    if #missing == 0 then listStr = "All tagged players are in the server!"
-    else for i, name in ipairs(missing) do listStr = listStr .. i .. ". " .. name .. "\n" end end
+    local txt = "Missing Players (" .. #m .. "):\n\n"
+    if #m == 0 then txt = "All tagged players are in the server!"
+    else for i, v in ipairs(m) do txt = txt .. i .. ". " .. v .. "\n" end end
     task.spawn(function()
-        local p = { ["username"] = "XAL Notifications!", ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg", ["embeds"] = {{ ["title"] = "🚫 Player Non PS List", ["description"] = listStr, ["color"] = 16733440, ["footer"] = { ["text"] = "XAL PS Monitoring", ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" } }} }
+        local p = { ["username"] = "XAL Notifications!", ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg", ["embeds"] = {{ ["title"] = "🚫 Player Non PS List", ["description"] = txt, ["color"] = 16733440, ["footer"] = { ["text"] = "XAL PS Monitoring", ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" } }} }
         httpRequest({ Url = Current_Webhook_List, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(p) })
     end)
 end)
