@@ -32,48 +32,6 @@ local function GetUsername(chatName)
     return chatName
 end
 
-local function GetThumbnailURL(assetId)
-    if not assetId then return nil end
-    local idNumber = assetId:match("rbxassetid://(%d+)") or assetId:match("^(%d+)$")
-    if not idNumber then return nil end
-
-    local apiUrl = string.format("https://thumbnails.roblox.com/v1/assets?assetIds=%s&type=Asset&size=420x420&format=Png", idNumber)
-    local success, response = pcall(function() return HttpService:JSONDecode(game:HttpGet(apiUrl)) end)
-
-    if success and response and response.data and response.data[1] then
-        return response.data[1].imageUrl
-    end
-    return nil
-end
-
-local function GetItemImageDynamic(itemName)
-    local searchName = itemName
-    searchName = string.gsub(searchName, "Big%s*", "")
-    searchName = string.gsub(searchName, "Shiny%s*", "")
-    searchName = string.gsub(searchName, "^%s*(.-)%s*$", "%1")
-
-    local targetItem = nil
-    if ReplicatedStorage:FindFirstChild("resources") and ReplicatedStorage.resources:FindFirstChild("items") then
-        if ReplicatedStorage.resources.items:FindFirstChild("fish") then
-            targetItem = ReplicatedStorage.resources.items.fish:FindFirstChild(searchName)
-        end
-    end
-
-    if targetItem then
-        local rawId = targetItem:FindFirstChild("Texture") or targetItem.TextureId or targetItem:FindFirstChild("Icon")
-        if not rawId and targetItem:IsA("MeshPart") then rawId = targetItem.TextureID end
-        
-        if rawId then
-            if typeof(rawId) == "Instance" and rawId:IsA("StringValue") then
-                return GetThumbnailURL(rawId.Value)
-            elseif typeof(rawId) == "string" then
-                return GetThumbnailURL(rawId)
-            end
-        end
-    end
-    return nil
-end
-
 local function ParseDataSmart(cleanMsg)
     local msg = string.gsub(cleanMsg, "%[Server%]: ", "")
     local player, fullItem, weight = string.match(msg, "^(.*) obtained a (.*) %((.*)%)")
@@ -92,18 +50,21 @@ local function ParseDataSmart(cleanMsg)
                 local s, e = string.find(lowerFullItem, string.lower(baseName) .. "$")
                 if s > 1 then
                     local prefixRaw = string.sub(fullItem, 1, s - 1)
-                    local checkStr = prefixRaw
                     
-                    checkStr = string.gsub(checkStr, "Big%s*", "")
-                    checkStr = string.gsub(checkStr, "Shiny%s*", "")
-                    checkStr = string.gsub(checkStr, "^%s*(.-)%s*$", "%1")
-                    
-                    if checkStr == "" then
-                        mutation = nil
-                        finalItem = fullItem 
+                    local checkMut = prefixRaw
+                    checkMut = string.gsub(checkMut, "Big%s*", "")
+                    checkMut = string.gsub(checkMut, "Shiny%s*", "")
+                    checkMut = string.gsub(checkMut, "Sparkling%s*", "")
+                    checkMut = string.gsub(checkMut, "Giant%s*", "")
+                    checkMut = string.gsub(checkMut, "^%s*(.-)%s*$", "%1")
+
+                    if checkMut == "" then
+                        mutation = nil 
+                        finalItem = fullItem
                     else
-                        mutation = checkStr 
-                        finalItem = string.gsub(fullItem, mutation .. "%s+", "")
+                        mutation = checkMut 
+                        finalItem = string.gsub(fullItem, prefixRaw, "") 
+                        finalItem = string.gsub(finalItem, "^%s*(.-)%s*$", "%1")
                     end
                 else
                     mutation = nil
@@ -141,59 +102,58 @@ local function SendWebhook(data, category)
     local embedColor = 3447003
     local embedFields = {} 
     local descriptionText = "" 
-    local embedThumbnail = nil 
-    
-    if category == "SECRET" or category == "STONE" then
-        local autoImage = GetItemImageDynamic(data.Item)
-        if autoImage then embedThumbnail = { ["url"] = autoImage } end
-    end
 
     if category == "SECRET" then
         embedTitle = data.Player .. " | Secret Caught!"
         embedColor = 3447003 
-        embedFields = {
-            { ["name"] = "🎣 Item Name", ["value"] = data.Item, ["inline"] = true },
-            { ["name"] = "🧬 Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
-            { ["name"] = "⚖️ Weight", ["value"] = data.Weight, ["inline"] = true }
-        }
+        
+        local lines = {}
+        table.insert(lines, "⚓ Fish: **" .. data.Item .. "**")
+        
+        if data.Mutation and data.Mutation ~= "None" then
+            table.insert(lines, "🧬 Mutation: **" .. data.Mutation .. "**")
+        end
+        
+        table.insert(lines, "⚖️ Weight: **" .. data.Weight .. "**")
+        
+        descriptionText = table.concat(lines, "\n")
 
     elseif category == "STONE" then
         embedTitle = data.Player .. " | Ruby Gemstone!"
         embedColor = 16753920 
-        embedFields = {
-            { ["name"] = "💎 Stone Name", ["value"] = data.Item, ["inline"] = true },
-            { ["name"] = "✨ Mutation", ["value"] = data.Mutation or "None", ["inline"] = true },
-            { ["name"] = "⚖️ Weight", ["value"] = data.Weight, ["inline"] = true }
-        }
+        
+        local lines = {}
+        table.insert(lines, "💎 Stone: **" .. data.Item .. "**")
+        
+        if data.Mutation and data.Mutation ~= "None" then
+            table.insert(lines, "✨ Mutation: **" .. data.Mutation .. "**")
+        end
+        
+        table.insert(lines, "⚖️ Weight: **" .. data.Weight .. "**")
+        descriptionText = table.concat(lines, "\n")
 
     elseif category == "LEAVE" then
         local dispName = data.DisplayName or data.Player
         embedTitle = dispName .. " | Left the server."
         embedColor = 16711680 
-        embedFields = {} 
-        descriptionText = "👤 @" .. data.Player 
-
-        embedThumbnail = nil 
+        descriptionText = "👤 **@" .. data.Player .. "**" 
 
     elseif category == "PLAYERS" then
         embedTitle = "👥 List Player In Server"
         embedColor = 5763719
         descriptionText = data.ListText
-        embedThumbnail = nil
     end
 
     local embedData = {
         ["username"] = "XAL Notifications!",
-        ["avatar_url"] = "https://i.imgur.com/GWx0mX9.jpeg",
         ["content"] = contentMsg, 
         ["embeds"] = {{
             ["title"] = embedTitle,
-            ["description"] = descriptionText,
+            ["description"] = descriptionText, 
             ["color"] = embedColor,
             ["fields"] = embedFields, 
-            ["thumbnail"] = embedThumbnail,
             ["footer"] = { 
-                ["text"] = "XAL Server Monitoring", 
+                ["text"] = "XAL PS Monitoring",
                 ["icon_url"] = "https://i.imgur.com/GWx0mX9.jpeg" 
             },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
@@ -277,13 +237,12 @@ Players.PlayerRemoving:Connect(function(player)
     task.spawn(function()
         SendWebhook({
             Player = player.Name, 
-            DisplayName = player.DisplayName,
-            UserId = player.UserId
+            DisplayName = player.DisplayName
         }, "LEAVE")
     end)
 end)
 
 StartPlayerListLoop()
 
-StarterGui:SetCore("SendNotification", {Title="XAL Notifications!", Text="Loaded!", Duration=5})
+StarterGui:SetCore("SendNotification", {Title="XAL PS Monitoring", Text="Success Loaded!", Duration=5})
 print("✅ XAL Webhook Loaded!")
