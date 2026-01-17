@@ -40,6 +40,8 @@ Header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Header.BackgroundTransparency = 0.15
 Header.Size = UDim2.new(1, 0, 0, 25)
 Header.BorderSizePixel = 0
+Header.ZIndex = 2
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
 
 local TitleLab = Instance.new("TextLabel", Header)
 TitleLab.BackgroundTransparency = 1
@@ -61,14 +63,15 @@ MinBtn.ImageColor3 = Color3.fromRGB(200, 200, 200)
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Sidebar.BackgroundTransparency = 0.15
-Sidebar.Position = UDim2.new(0, 0, 0, 25)
-Sidebar.Size = UDim2.new(0, 90, 1, -25)
+Sidebar.Position = UDim2.new(0, 0, 0, 0)
+Sidebar.Size = UDim2.new(0, 90, 1, 0)
 Sidebar.BorderSizePixel = 0
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
 
 local SideLayout = Instance.new("UIListLayout", Sidebar)
 SideLayout.Padding = UDim.new(0, 4)
 SideLayout.HorizontalAlignment = "Center"
-Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 8)
+Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 30)
 
 local ContentContainer = Instance.new("Frame", MainFrame)
 ContentContainer.BackgroundTransparency = 1
