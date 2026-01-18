@@ -356,14 +356,9 @@ local function CreateToggle(parent, text, default, callback)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
     local Label = Instance.new("TextLabel", Frame)
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 6, 0, 0)
-    Label.Size = UDim2.new(0, 180, 1, 0)
-    Label.Font = Enum.Font.Gotham
-    Label.Text = text
-    Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-    Label.TextSize = 11 -- Font Size 11
-    Label.TextXAlignment = "Left"
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 6, 0, 0); Label.Size = UDim2.new(0, 180, 1, 0)
+    Label.Font = Enum.Font.Gotham; Label.Text = text; Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+    Label.TextSize = 11; Label.TextXAlignment = "Left"
     
     local Switch = Instance.new("TextButton", Frame)
     Switch.BackgroundColor3 = default and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(60, 60, 60)
@@ -403,6 +398,39 @@ local function CreateAction(parent, text, color, callback)
     Btn.TextColor3 = Color3.new(1, 1, 1)
     Btn.TextSize = 11
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    Btn.MouseButton1Click:Connect(callback)
+end
+
+-- Helper: Create Button with Label (Text Left, Button Right)
+local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callback)
+    local Frame = Instance.new("Frame", parent)
+    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Frame.BackgroundTransparency = 0
+    Frame.Size = UDim2.new(1, 0, 0, 26) -- Sedikit lebih tinggi
+    Frame.BorderSizePixel = 0
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
+    
+    local Label = Instance.new("TextLabel", Frame)
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0, 6, 0, 0)
+    Label.Size = UDim2.new(0, 180, 1, 0)
+    Label.Font = Enum.Font.Gotham
+    Label.Text = labelText
+    Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+    Label.TextSize = 11
+    Label.TextXAlignment = "Left"
+    
+    local Btn = Instance.new("TextButton", Frame)
+    Btn.BackgroundColor3 = btnColor
+    Btn.BackgroundTransparency = 0.2
+    Btn.Position = UDim2.new(1, -70, 0.5, -10) -- Tombol di kanan
+    Btn.Size = UDim2.new(0, 60, 0, 20)
+    Btn.Font = Enum.Font.GothamSemibold
+    Btn.Text = btnText
+    Btn.TextColor3 = Color3.new(1, 1, 1)
+    Btn.TextSize = 10
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    
     Btn.MouseButton1Click:Connect(callback)
 end
 
@@ -505,7 +533,7 @@ CreateToggle(Page_Webhook, "Secret Caught", Settings.SecretEnabled, function(v) 
 CreateToggle(Page_Webhook, "Ruby Gemstone", Settings.RubyEnabled, function(v) Settings.RubyEnabled = v end)
 CreateToggle(Page_Webhook, "Player Leave", Settings.LeaveEnabled, function(v) Settings.LeaveEnabled = v end)
 
--- TAB: Send
+-- TAB: Send [UPDATED: Left Name, Right Button]
 -- Helper: Test Webhook Connection
 local function TestWebhook(url, name)
     task.spawn(function()
@@ -514,7 +542,7 @@ local function TestWebhook(url, name)
     end)
 end
 
-CreateAction(Page_Send, "Send Player List", Color3.fromRGB(60, 120, 200), function()
+CreateActionWithLabel(Page_Send, "Send Player List", "Send", Color3.fromRGB(60, 120, 200), function()
     local all = Players:GetPlayers(); local str = "Current Players (" .. #all .. "):\n\n"
     for i, p in ipairs(all) do str = str .. "**" .. i .. ". " .. p.DisplayName .. "** (@" .. p.Name .. ")\n" end
     task.spawn(function()
@@ -523,7 +551,7 @@ CreateAction(Page_Send, "Send Player List", Color3.fromRGB(60, 120, 200), functi
     end)
 end)
 
-CreateAction(Page_Send, "Player Non PS (Auto Tag)", Color3.fromRGB(200, 100, 50), function()
+CreateActionWithLabel(Page_Send, "Player Non PS (Auto Tag)", "Send", Color3.fromRGB(200, 100, 50), function()
     local current = {}
     for _, p in ipairs(Players:GetPlayers()) do current[string.lower(p.Name)] = true end
     local missingNames = {}; local missingTags = {}
@@ -544,9 +572,10 @@ CreateAction(Page_Send, "Player Non PS (Auto Tag)", Color3.fromRGB(200, 100, 50)
     end)
 end)
 
-CreateAction(Page_Send, "Check Webhook 1", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Fish, "Webhook 1") end)
-CreateAction(Page_Send, "Check Webhook 2", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Leave, "Webhook 2") end)
-CreateAction(Page_Send, "Check Webhook 3", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_List, "Webhook 3") end)
+-- [UPDATED] Check Webhook Buttons (Consistency)
+CreateActionWithLabel(Page_Send, "Check Notif Fish", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Fish, "Webhook 1") end)
+CreateActionWithLabel(Page_Send, "Check Notif Leave", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Leave, "Webhook 2") end)
+CreateActionWithLabel(Page_Send, "Check Notif Player", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_List, "Webhook 3") end)
 
 -- Re-open Button (Minimalist Floating)
 local OpenBtn = Instance.new("TextButton", ScreenGui)
