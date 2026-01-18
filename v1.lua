@@ -1,3 +1,15 @@
+--[[
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Resized)
+    
+    Cara Penggunaan:
+    1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
+    2. Tekan tombol "Load Config" untuk mengisi data otomatis.
+    3. Anda TETAP BISA mengedit Webhook/ID di GUI secara manual setelah load.
+]]
+
+-- /////////////////////////////////////////////////////////////
+-- [ BAGIAN 1: CONFIGURATION (PENGATURAN USER) ]
+-- /////////////////////////////////////////////////////////////
 getgenv().CNF = {
     -- [OPSIONAL] Masukkan Link RAW JSON di sini agar otomatis load saat inject.
     ExternalConfigURL = "", 
@@ -144,11 +156,11 @@ if oldUI then oldUI:Destroy() task.wait(0.1) end
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "XAL_System"
 
--- Main Frame (Ukuran Seraphin 380x190)
+-- Main Frame (Ukuran 450 x 250)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Darker Grey
-MainFrame.Position = UDim2.new(0.5, -190, 0.5, -95) 
-MainFrame.Size = UDim2.new(0, 380, 0, 190) -- Seraphin Style Size
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -125) -- Posisi Tengah (450/2 = 225, 250/2 = 125)
+MainFrame.Size = UDim2.new(0, 450, 0, 250) -- Ukuran Baru
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
@@ -214,7 +226,7 @@ MinBtn.ZIndex = 6
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Sidebar.Position = UDim2.new(0, 0, 0, 22)
-Sidebar.Size = UDim2.new(0, 90, 1, -22) 
+Sidebar.Size = UDim2.new(0, 100, 1, -22) -- Sidebar lebar 100
 Sidebar.BorderSizePixel = 0
 Sidebar.ZIndex = 2
 
@@ -226,8 +238,8 @@ Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 5)
 -- Content Container
 local ContentContainer = Instance.new("Frame", MainFrame)
 ContentContainer.BackgroundTransparency = 1
-ContentContainer.Position = UDim2.new(0, 95, 0, 27)
-ContentContainer.Size = UDim2.new(1, -100, 1, -32)
+ContentContainer.Position = UDim2.new(0, 105, 0, 27)
+ContentContainer.Size = UDim2.new(1, -110, 1, -32)
 ContentContainer.ZIndex = 3
 
 -- [NEW] Confirmation Modal (Minimalist)
@@ -403,26 +415,14 @@ local function CreateInput(parent, placeholder, default, callback)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
     local Label = Instance.new("TextLabel", Frame)
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 6, 0, 0)
-    Label.Size = UDim2.new(0, 80, 1, 0) 
-    Label.Font = Enum.Font.Gotham
-    Label.Text = placeholder
-    Label.TextColor3 = Color3.fromRGB(180, 180, 180)
-    Label.TextSize = 10
-    Label.TextXAlignment = "Left"
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 6, 0, 0); Label.Size = UDim2.new(0, 80, 1, 0) 
+    Label.Font = Enum.Font.Gotham; Label.Text = placeholder; Label.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Label.TextSize = 10; Label.TextXAlignment = "Left"
     
     local Input = Instance.new("TextBox", Frame)
-    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Input.Position = UDim2.new(0, 90, 0.5, -8)
-    Input.Size = UDim2.new(1, -95, 0, 16)
-    Input.Font = Enum.Font.Gotham
-    Input.Text = default
-    Input.PlaceholderText = "Paste here..."
-    Input.TextColor3 = Color3.new(1, 1, 1)
-    Input.TextSize = 10
-    Input.TextXAlignment = "Left"
-    Input.ClearTextOnFocus = false
+    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 90, 0.5, -8); Input.Size = UDim2.new(1, -95, 0, 16)
+    Input.Font = Enum.Font.Gotham; Input.Text = default; Input.PlaceholderText = "Paste here..."; Input.TextColor3 = Color3.new(1, 1, 1)
+    Input.TextSize = 10; Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 3)
     
     Input.FocusLost:Connect(function() callback(Input.Text, Input) end)
@@ -442,20 +442,31 @@ UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, funct
 UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end)
 UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end)
 
--- TAB: Tag Discord (Minimalist Side-by-Side)
+-- TAB: Tag Discord (Minimalist Side-by-Side dengan Nomor)
 for i = 1, 20 do
     local rowData = TagList[i]
     local Row = Instance.new("Frame", Page_Tag)
     Row.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Row.BackgroundTransparency = 0.5
-    Row.Size = UDim2.new(1, 0, 0, 24) -- Lebih Kecil
+    Row.Size = UDim2.new(1, 0, 0, 24)
     Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 4)
     
-    -- Input Username (Kiri - 35%)
+    -- Nomor Urut
+    local Num = Instance.new("TextLabel", Row)
+    Num.BackgroundTransparency = 1
+    Num.Position = UDim2.new(0, 5, 0, 0)
+    Num.Size = UDim2.new(0, 15, 1, 0)
+    Num.Font = Enum.Font.Gotham
+    Num.Text = i .. "."
+    Num.TextColor3 = Color3.fromRGB(150, 150, 150)
+    Num.TextSize = 10
+    Num.TextXAlignment = "Left"
+
+    -- Input Username (Kiri)
     local UserInput = Instance.new("TextBox", Row)
     UserInput.BackgroundTransparency = 1
-    UserInput.Position = UDim2.new(0, 5, 0, 0)
-    UserInput.Size = UDim2.new(0.35, 0, 1, 0)
+    UserInput.Position = UDim2.new(0, 25, 0, 0) -- Bergeser sedikit untuk nomor
+    UserInput.Size = UDim2.new(0.35, -25, 1, 0)
     UserInput.Font = Enum.Font.Gotham
     UserInput.Text = rowData[1]
     UserInput.PlaceholderText = "Username"
@@ -471,7 +482,7 @@ for i = 1, 20 do
     Sep.Position = UDim2.new(0.35, 5, 0.2, 0)
     Sep.Size = UDim2.new(0, 1, 0.6, 0)
     
-    -- Input ID (Kanan - Sisanya)
+    -- Input ID (Kanan)
     local IDInput = Instance.new("TextBox", Row)
     IDInput.BackgroundTransparency = 1
     IDInput.Position = UDim2.new(0.35, 15, 0, 0)
