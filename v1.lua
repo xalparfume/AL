@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Final Polish V2)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Height Adjusted -4px)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -335,7 +335,7 @@ local function CreateTab(name, target, isDefault)
     TabBtn.Font = Enum.Font.GothamMedium 
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    TabBtn.TextSize = 12 -- [UPDATED] Ukuran Text Tab jadi 12
+    TabBtn.TextSize = 12 
     TabBtn.ZIndex = 3
     
     -- [NEW] Active Line Indicator (POSISI DI KIRI)
@@ -392,7 +392,7 @@ local function CreateToggle(parent, text, default, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 34) -- [UPDATED] Tinggi jadi 34
+    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -434,7 +434,7 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 34) -- [UPDATED] Tinggi jadi 34
+    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -494,12 +494,12 @@ end
 -- /////////////////////////////////////////////////////////////
 
 -- TAB: Config (External URL & Load Only)
--- [UPDATED] Tinggi 40 untuk input URL (Lebih Tinggi)
-CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", function(v) Config.ExternalConfigURL = v end, 40)
+-- [UPDATED] Tinggi 36 untuk input URL (Lebih Tinggi Sedikit dari standar)
+CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", function(v) Config.ExternalConfigURL = v end, 36)
 
 local LoadWrapper = Instance.new("Frame", Page_Config)
 LoadWrapper.BackgroundTransparency = 1
-LoadWrapper.Size = UDim2.new(1, 0, 0, 40) -- [UPDATED] Tinggi Wrapper Load Config 40
+LoadWrapper.Size = UDim2.new(1, 0, 0, 36) -- [UPDATED] Tinggi Wrapper Load Config 36
 
 local LoadBtn = Instance.new("TextButton", LoadWrapper)
 LoadBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
@@ -515,10 +515,10 @@ Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 4)
 LoadBtn.MouseButton1Click:Connect(function() LoadExternalConfig(Config.ExternalConfigURL) end)
 
 -- TAB: Link Webhook
--- [UPDATED] Tinggi 40 untuk input URL Webhook (Lebih Tinggi)
-UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end, 40)
-UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end, 40)
-UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end, 40)
+-- [UPDATED] Tinggi 36 untuk input URL Webhook (Lebih Tinggi Sedikit)
+UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end, 36)
+UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end, 36)
+UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end, 36)
 
 -- TAB: Tag Discord
 for i = 1, 20 do
