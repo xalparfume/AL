@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Bold Fonts)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Left Indicator)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -195,7 +195,7 @@ TitleLab.Size = UDim2.new(0, 200, 1, 0)
 TitleLab.Font = Enum.Font.GothamBold
 TitleLab.Text = "XAL PS Monitoring"
 TitleLab.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-TitleLab.TextSize = 16 -- [UPDATED] Lebih Besar
+TitleLab.TextSize = 16 
 TitleLab.TextXAlignment = "Left"
 TitleLab.ZIndex = 6
 
@@ -208,7 +208,7 @@ CloseBtn.Size = UDim2.new(0, 30, 1, 0)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "×" 
 CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-CloseBtn.TextSize = 20 -- [UPDATED] Lebih Besar
+CloseBtn.TextSize = 20
 CloseBtn.ZIndex = 6
 
 -- [MINIMALIST] Minimize Button (-)
@@ -220,7 +220,7 @@ MinBtn.Size = UDim2.new(0, 30, 1, 0)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.Text = "−" 
 MinBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-MinBtn.TextSize = 20 -- [UPDATED] Lebih Besar
+MinBtn.TextSize = 20
 MinBtn.ZIndex = 6
 
 -- Sidebar Menu
@@ -275,17 +275,17 @@ ModalTitle.Size = UDim2.new(1, 0, 0, 20)
 ModalTitle.Font = Enum.Font.GothamBold
 ModalTitle.Text = "Close Script?"
 ModalTitle.TextColor3 = Color3.new(1, 1, 1)
-ModalTitle.TextSize = 16 -- [UPDATED] Lebih Besar
+ModalTitle.TextSize = 16 
 ModalTitle.ZIndex = 101
 
 local BtnYes = Instance.new("TextButton", ModalFrame)
 BtnYes.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
 BtnYes.Position = UDim2.new(0, 20, 1, -35)
 BtnYes.Size = UDim2.new(0, 85, 0, 25)
-BtnYes.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+BtnYes.Font = Enum.Font.GothamBold 
 BtnYes.Text = "Yes"
 BtnYes.TextColor3 = Color3.new(1, 1, 1)
-BtnYes.TextSize = 13 -- [UPDATED] Lebih Besar
+BtnYes.TextSize = 13 
 BtnYes.ZIndex = 101
 Instance.new("UICorner", BtnYes).CornerRadius = UDim.new(0, 4)
 
@@ -293,10 +293,10 @@ local BtnNo = Instance.new("TextButton", ModalFrame)
 BtnNo.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 BtnNo.Position = UDim2.new(1, -105, 1, -35)
 BtnNo.Size = UDim2.new(0, 85, 0, 25)
-BtnNo.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+BtnNo.Font = Enum.Font.GothamBold 
 BtnNo.Text = "No"
 BtnNo.TextColor3 = Color3.new(1, 1, 1)
-BtnNo.TextSize = 13 -- [UPDATED] Lebih Besar
+BtnNo.TextSize = 13 
 BtnNo.ZIndex = 101
 Instance.new("UICorner", BtnNo).CornerRadius = UDim.new(0, 4)
 
@@ -326,38 +326,65 @@ local Page_Url = CreatePage("UrlWebhook")
 local Page_Tag = CreatePage("TagDiscord")
 Page_Webhook.Visible = true
 
--- Helper: Create Tab Button (Minimalist)
-local function CreateTab(name, target)
+-- Helper: Create Tab Button (Minimalist with Indicator)
+local function CreateTab(name, target, isDefault)
     local TabBtn = Instance.new("TextButton", Sidebar)
     TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Match sidebar
     TabBtn.BackgroundTransparency = 1 
     TabBtn.Size = UDim2.new(1, 0, 0, 22)
-    TabBtn.Font = Enum.Font.GothamMedium -- [UPDATED] Lebih Tebal dari Regular
+    TabBtn.Font = Enum.Font.GothamMedium 
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    TabBtn.TextSize = 12 -- [UPDATED] Lebih Besar
+    TabBtn.TextSize = 13 -- [UPDATED] Ukuran Text Tab jadi 13
     TabBtn.ZIndex = 3
     
+    -- [NEW] Active Line Indicator (POSISI DI KIRI)
+    local Indicator = Instance.new("Frame", TabBtn)
+    Indicator.Name = "ActiveIndicator"
+    Indicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Indicator.BorderSizePixel = 0
+    Indicator.Position = UDim2.new(0, 0, 0.5, -8) -- [FIX] Sisi Kiri, Tengah Vertikal
+    Indicator.Size = UDim2.new(0, 2, 0, 16) -- Garis Tipis
+    Indicator.Visible = false -- Sembunyi Default
+    Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+
     TabBtn.MouseButton1Click:Connect(function()
         Page_Webhook.Visible = false; Page_Send.Visible = false; Page_Config.Visible = false; Page_Tag.Visible = false; Page_Url.Visible = false
         target.Visible = true
+        
+        -- Reset Style semua tombol lain
         for _, child in pairs(Sidebar:GetChildren()) do
             if child:IsA("TextButton") then 
                 child.TextColor3 = Color3.fromRGB(150, 150, 150)
                 child.Font = Enum.Font.GothamMedium 
+                -- Sembunyikan garis indikator tombol lain
+                local line = child:FindFirstChild("ActiveIndicator")
+                if line then line.Visible = false end
             end
         end
+        
+        -- Set Style Aktif untuk tombol ini
         TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabBtn.Font = Enum.Font.GothamBold -- Bold saat aktif
+        TabBtn.Font = Enum.Font.GothamBold
+        Indicator.Visible = true -- Tampilkan garis
     end)
+
+    -- [NEW] Set Default Active State (If passed as true)
+    if isDefault then
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabBtn.Font = Enum.Font.GothamBold
+        Indicator.Visible = true
+        target.Visible = true
+    end
 end
 
--- Tab Order [UPDATED NAMES]
-CreateTab("Notification", Page_Webhook) -- Was: Webhook
-CreateTab("Connection", Page_Send) -- Was: Send
-CreateTab("Webhook", Page_Url) -- Was: Link Webhook
-CreateTab("List Player", Page_Tag) -- Was: Tag Discord
-CreateTab("Load Config", Page_Config) -- Was: Config
+-- Tab Order [UPDATED NAMES & Default State]
+-- "Notification" tab is default active (true passed as 3rd arg)
+CreateTab("Notification", Page_Webhook, true) 
+CreateTab("Connection", Page_Send)
+CreateTab("Webhook", Page_Url)
+CreateTab("List Player", Page_Tag)
+CreateTab("Load Config", Page_Config)
 
 -- [MINIMALIST UI HELPER FUNCTIONS]
 
