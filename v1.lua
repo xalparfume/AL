@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Height Adjusted -4px)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Input Spacing Adjusted)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -477,8 +477,14 @@ local function CreateInput(parent, placeholder, default, callback, height)
     Label.TextSize = 12 -- [UPDATED] Lebih Besar
     Label.TextXAlignment = "Left"
     
+    -- [UPDATED] Position & Size TextBox agar label tidak bertabrakan (Khusus Input Tinggi)
+    local inputX = (height and height > 30) and 110 or 90
+    local inputWidth = (height and height > 30) and 115 or 95
+    
     local Input = Instance.new("TextBox", Frame)
-    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 90, 0.5, -8); Input.Size = UDim2.new(1, -95, 0, 16)
+    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Input.Position = UDim2.new(0, inputX, 0.5, -8)
+    Input.Size = UDim2.new(1, -inputWidth, 0, 16)
     Input.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     Input.Text = default; Input.PlaceholderText = "Paste here..."; Input.TextColor3 = Color3.new(1, 1, 1)
     Input.TextSize = 12 -- [UPDATED] Lebih Besar
