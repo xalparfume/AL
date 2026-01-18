@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Resized)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Resized & No Overlay)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -155,11 +155,12 @@ if oldUI then oldUI:Destroy() task.wait(0.1) end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "XAL_System"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Main Frame (Ukuran 450 x 250)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Darker Grey
-MainFrame.Position = UDim2.new(0.5, -225, 0.5, -125) -- Posisi Tengah (450/2 = 225, 250/2 = 125)
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -125) -- Posisi Tengah
 MainFrame.Size = UDim2.new(0, 450, 0, 250) -- Ukuran Baru
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -242,49 +243,63 @@ ContentContainer.Position = UDim2.new(0, 105, 0, 27)
 ContentContainer.Size = UDim2.new(1, -110, 1, -32)
 ContentContainer.ZIndex = 3
 
--- [NEW] Confirmation Modal (Minimalist)
-local ModalOverlay = Instance.new("Frame", ScreenGui)
-ModalOverlay.Name = "ModalOverlay"
-ModalOverlay.BackgroundColor3 = Color3.new(0, 0, 0)
-ModalOverlay.BackgroundTransparency = 0.5
-ModalOverlay.Size = UDim2.new(1, 0, 1, 0)
-ModalOverlay.ZIndex = 100
-ModalOverlay.Visible = false
-
-local ModalFrame = Instance.new("Frame", ModalOverlay)
+-- [REVISED] Confirmation Modal (Tanpa Overlay Hitam)
+-- Langsung di ScreenGui, tapi tanpa background hitam layar penuh.
+-- ZIndex tinggi agar selalu di atas.
+local ModalFrame = Instance.new("Frame", ScreenGui)
+ModalFrame.Name = "ModalConfirm"
 ModalFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-ModalFrame.Size = UDim2.new(0, 200, 0, 90)
-ModalFrame.Position = UDim2.new(0.5, -100, 0.5, -45)
-MainFrame.BorderSizePixel = 0
-Instance.new("UICorner", ModalFrame).CornerRadius = UDim.new(0, 4)
+ModalFrame.Size = UDim2.new(0, 220, 0, 100)
+ModalFrame.Position = UDim2.new(0.5, -110, 0.5, -50) -- Center Screen
+ModalFrame.BorderSizePixel = 0
+ModalFrame.ZIndex = 100 -- Sangat tinggi
+ModalFrame.Visible = false
+ModalFrame.Active = true -- Block click-through
+Instance.new("UICorner", ModalFrame).CornerRadius = UDim.new(0, 6)
+
+-- Drop Shadow untuk Modal agar terpisah dari background game
+local ModalShadow = Instance.new("ImageLabel", ModalFrame)
+ModalShadow.Name = "Shadow"
+ModalShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+ModalShadow.BackgroundTransparency = 1
+ModalShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+ModalShadow.Size = UDim2.new(1, 40, 1, 40)
+ModalShadow.ZIndex = 99
+ModalShadow.Image = "rbxassetid://6014261993"
+ModalShadow.ImageColor3 = Color3.new(0, 0, 0)
+ModalShadow.ImageTransparency = 0.5
+ModalShadow.SliceCenter = Rect.new(49, 49, 450, 450)
 
 local ModalTitle = Instance.new("TextLabel", ModalFrame)
 ModalTitle.BackgroundTransparency = 1
-ModalTitle.Position = UDim2.new(0, 0, 0, 10)
+ModalTitle.Position = UDim2.new(0, 0, 0, 15)
 ModalTitle.Size = UDim2.new(1, 0, 0, 20)
 ModalTitle.Font = Enum.Font.GothamBold
 ModalTitle.Text = "Close Script?"
 ModalTitle.TextColor3 = Color3.new(1, 1, 1)
-ModalTitle.TextSize = 13
+ModalTitle.TextSize = 14
+ModalTitle.ZIndex = 101
 
 local BtnYes = Instance.new("TextButton", ModalFrame)
 BtnYes.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-BtnYes.Position = UDim2.new(0, 15, 1, -30)
-BtnYes.Size = UDim2.new(0, 80, 0, 20)
+BtnYes.Position = UDim2.new(0, 20, 1, -35)
+BtnYes.Size = UDim2.new(0, 85, 0, 25)
 BtnYes.Font = Enum.Font.Gotham
 BtnYes.Text = "Yes"
 BtnYes.TextColor3 = Color3.new(1, 1, 1)
-BtnYes.TextSize = 11
+BtnYes.TextSize = 12
+BtnYes.ZIndex = 101
 Instance.new("UICorner", BtnYes).CornerRadius = UDim.new(0, 4)
 
 local BtnNo = Instance.new("TextButton", ModalFrame)
 BtnNo.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-BtnNo.Position = UDim2.new(1, -95, 1, -30)
-BtnNo.Size = UDim2.new(0, 80, 0, 20)
+BtnNo.Position = UDim2.new(1, -105, 1, -35)
+BtnNo.Size = UDim2.new(0, 85, 0, 25)
 BtnNo.Font = Enum.Font.Gotham
 BtnNo.Text = "No"
 BtnNo.TextColor3 = Color3.new(1, 1, 1)
-BtnNo.TextSize = 11
+BtnNo.TextSize = 12
+BtnNo.ZIndex = 101
 Instance.new("UICorner", BtnNo).CornerRadius = UDim.new(0, 4)
 
 -- Helper: Create Page
@@ -298,7 +313,11 @@ local function CreatePage(name)
     Page.CanvasSize = UDim2.new(0, 0, 0, 0)
     Page.AutomaticCanvasSize = "Y"
     Page.ZIndex = 4
-    Instance.new("UIListLayout", Page).Padding = UDim.new(0, 3)
+    
+    -- [UPDATED] Menambahkan jarak vertikal antar elemen (Padding: 4px)
+    local layout = Instance.new("UIListLayout", Page)
+    layout.Padding = UDim.new(0, 4) 
+    
     return Page
 end
 
@@ -596,8 +615,8 @@ OpenBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Close / Minimize Logic
-CloseBtn.MouseButton1Click:Connect(function() ModalOverlay.Visible = true end)
-BtnNo.MouseButton1Click:Connect(function() ModalOverlay.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ModalFrame.Visible = true end)
+BtnNo.MouseButton1Click:Connect(function() ModalFrame.Visible = false end)
 BtnYes.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenBtn.Visible = true; OpenBtn.Position = MainFrame.Position end)
 
