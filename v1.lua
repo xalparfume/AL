@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Final Menu Names)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Bold Fonts)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -195,7 +195,7 @@ TitleLab.Size = UDim2.new(0, 200, 1, 0)
 TitleLab.Font = Enum.Font.GothamBold
 TitleLab.Text = "XAL PS Monitoring"
 TitleLab.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-TitleLab.TextSize = 14 -- Sedikit lebih besar
+TitleLab.TextSize = 16 -- [UPDATED] Lebih Besar
 TitleLab.TextXAlignment = "Left"
 TitleLab.ZIndex = 6
 
@@ -208,7 +208,7 @@ CloseBtn.Size = UDim2.new(0, 30, 1, 0)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "×" 
 CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-CloseBtn.TextSize = 18
+CloseBtn.TextSize = 20 -- [UPDATED] Lebih Besar
 CloseBtn.ZIndex = 6
 
 -- [MINIMALIST] Minimize Button (-)
@@ -220,7 +220,7 @@ MinBtn.Size = UDim2.new(0, 30, 1, 0)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.Text = "−" 
 MinBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-MinBtn.TextSize = 18
+MinBtn.TextSize = 20 -- [UPDATED] Lebih Besar
 MinBtn.ZIndex = 6
 
 -- Sidebar Menu
@@ -275,17 +275,17 @@ ModalTitle.Size = UDim2.new(1, 0, 0, 20)
 ModalTitle.Font = Enum.Font.GothamBold
 ModalTitle.Text = "Close Script?"
 ModalTitle.TextColor3 = Color3.new(1, 1, 1)
-ModalTitle.TextSize = 14
+ModalTitle.TextSize = 16 -- [UPDATED] Lebih Besar
 ModalTitle.ZIndex = 101
 
 local BtnYes = Instance.new("TextButton", ModalFrame)
 BtnYes.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
 BtnYes.Position = UDim2.new(0, 20, 1, -35)
 BtnYes.Size = UDim2.new(0, 85, 0, 25)
-BtnYes.Font = Enum.Font.Gotham
+BtnYes.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
 BtnYes.Text = "Yes"
 BtnYes.TextColor3 = Color3.new(1, 1, 1)
-BtnYes.TextSize = 12
+BtnYes.TextSize = 13 -- [UPDATED] Lebih Besar
 BtnYes.ZIndex = 101
 Instance.new("UICorner", BtnYes).CornerRadius = UDim.new(0, 4)
 
@@ -293,10 +293,10 @@ local BtnNo = Instance.new("TextButton", ModalFrame)
 BtnNo.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 BtnNo.Position = UDim2.new(1, -105, 1, -35)
 BtnNo.Size = UDim2.new(0, 85, 0, 25)
-BtnNo.Font = Enum.Font.Gotham
+BtnNo.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
 BtnNo.Text = "No"
 BtnNo.TextColor3 = Color3.new(1, 1, 1)
-BtnNo.TextSize = 12
+BtnNo.TextSize = 13 -- [UPDATED] Lebih Besar
 BtnNo.ZIndex = 101
 Instance.new("UICorner", BtnNo).CornerRadius = UDim.new(0, 4)
 
@@ -332,10 +332,10 @@ local function CreateTab(name, target)
     TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Match sidebar
     TabBtn.BackgroundTransparency = 1 
     TabBtn.Size = UDim2.new(1, 0, 0, 22)
-    TabBtn.Font = Enum.Font.Gotham
+    TabBtn.Font = Enum.Font.GothamMedium -- [UPDATED] Lebih Tebal dari Regular
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    TabBtn.TextSize = 10
+    TabBtn.TextSize = 12 -- [UPDATED] Lebih Besar
     TabBtn.ZIndex = 3
     
     TabBtn.MouseButton1Click:Connect(function()
@@ -344,11 +344,11 @@ local function CreateTab(name, target)
         for _, child in pairs(Sidebar:GetChildren()) do
             if child:IsA("TextButton") then 
                 child.TextColor3 = Color3.fromRGB(150, 150, 150)
-                child.Font = Enum.Font.Gotham 
+                child.Font = Enum.Font.GothamMedium 
             end
         end
         TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabBtn.Font = Enum.Font.GothamBold
+        TabBtn.Font = Enum.Font.GothamBold -- Bold saat aktif
     end)
 end
 
@@ -371,8 +371,10 @@ local function CreateToggle(parent, text, default, callback)
     
     local Label = Instance.new("TextLabel", Frame)
     Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 6, 0, 0); Label.Size = UDim2.new(0, 180, 1, 0)
-    Label.Font = Enum.Font.Gotham; Label.Text = text; Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-    Label.TextSize = 11; Label.TextXAlignment = "Left"
+    Label.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+    Label.Text = text; Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+    Label.TextSize = 13 -- [UPDATED] Lebih Besar
+    Label.TextXAlignment = "Left"
     
     local Switch = Instance.new("TextButton", Frame)
     Switch.BackgroundColor3 = default and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(60, 60, 60)
@@ -413,10 +415,10 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     Label.BackgroundTransparency = 1
     Label.Position = UDim2.new(0, 6, 0, 0)
     Label.Size = UDim2.new(0, 180, 1, 0)
-    Label.Font = Enum.Font.Gotham
+    Label.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     Label.Text = labelText
     Label.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-    Label.TextSize = 11
+    Label.TextSize = 13 -- [UPDATED] Lebih Besar
     Label.TextXAlignment = "Left"
     
     local Btn = Instance.new("TextButton", Frame)
@@ -424,10 +426,10 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     Btn.BackgroundTransparency = 0.2
     Btn.Position = UDim2.new(1, -70, 0.5, -10)
     Btn.Size = UDim2.new(0, 60, 0, 20)
-    Btn.Font = Enum.Font.GothamSemibold
+    Btn.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     Btn.Text = btnText
     Btn.TextColor3 = Color3.new(1, 1, 1)
-    Btn.TextSize = 10
+    Btn.TextSize = 12 -- [UPDATED] Lebih Besar
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
     
     Btn.MouseButton1Click:Connect(callback)
@@ -442,13 +444,17 @@ local function CreateInput(parent, placeholder, default, callback)
     
     local Label = Instance.new("TextLabel", Frame)
     Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 6, 0, 0); Label.Size = UDim2.new(0, 80, 1, 0) 
-    Label.Font = Enum.Font.Gotham; Label.Text = placeholder; Label.TextColor3 = Color3.fromRGB(180, 180, 180)
-    Label.TextSize = 10; Label.TextXAlignment = "Left"
+    Label.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+    Label.Text = placeholder; Label.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Label.TextSize = 12 -- [UPDATED] Lebih Besar
+    Label.TextXAlignment = "Left"
     
     local Input = Instance.new("TextBox", Frame)
     Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.Position = UDim2.new(0, 90, 0.5, -8); Input.Size = UDim2.new(1, -95, 0, 16)
-    Input.Font = Enum.Font.Gotham; Input.Text = default; Input.PlaceholderText = "Paste here..."; Input.TextColor3 = Color3.new(1, 1, 1)
-    Input.TextSize = 10; Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
+    Input.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+    Input.Text = default; Input.PlaceholderText = "Paste here..."; Input.TextColor3 = Color3.new(1, 1, 1)
+    Input.TextSize = 12 -- [UPDATED] Lebih Besar
+    Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 3)
     
     Input.FocusLost:Connect(function() callback(Input.Text, Input) end)
@@ -471,10 +477,10 @@ LoadBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
 LoadBtn.BackgroundTransparency = 0.2
 LoadBtn.Position = UDim2.new(1, -80, 0, 0)
 LoadBtn.Size = UDim2.new(0, 80, 1, 0)
-LoadBtn.Font = Enum.Font.GothamSemibold
+LoadBtn.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
 LoadBtn.Text = "LOAD CONFIG"
 LoadBtn.TextColor3 = Color3.new(1, 1, 1)
-LoadBtn.TextSize = 10
+LoadBtn.TextSize = 12 -- [UPDATED] Lebih Besar
 Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 4)
 
 LoadBtn.MouseButton1Click:Connect(function() LoadExternalConfig(Config.ExternalConfigURL) end)
@@ -497,21 +503,21 @@ for i = 1, 20 do
     Num.BackgroundTransparency = 1
     Num.Position = UDim2.new(0, 5, 0, 0)
     Num.Size = UDim2.new(0, 15, 1, 0)
-    Num.Font = Enum.Font.Gotham
+    Num.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     Num.Text = i .. "."
     Num.TextColor3 = Color3.fromRGB(150, 150, 150)
-    Num.TextSize = 10
+    Num.TextSize = 12 -- [UPDATED] Lebih Besar
     Num.TextXAlignment = "Left"
 
     local UserInput = Instance.new("TextBox", Row)
     UserInput.BackgroundTransparency = 1
     UserInput.Position = UDim2.new(0, 25, 0, 0)
     UserInput.Size = UDim2.new(0.35, -25, 1, 0)
-    UserInput.Font = Enum.Font.Gotham
+    UserInput.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     UserInput.Text = rowData[1]
     UserInput.PlaceholderText = "Username"
     UserInput.TextColor3 = Color3.new(1, 1, 1)
-    UserInput.TextSize = 10
+    UserInput.TextSize = 12 -- [UPDATED] Lebih Besar
     UserInput.TextXAlignment = "Left"
     UserInput.ClearTextOnFocus = false
     
@@ -525,11 +531,11 @@ for i = 1, 20 do
     IDInput.BackgroundTransparency = 1
     IDInput.Position = UDim2.new(0.35, 15, 0, 0)
     IDInput.Size = UDim2.new(0.6, -15, 1, 0)
-    IDInput.Font = Enum.Font.Gotham
+    IDInput.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
     IDInput.Text = rowData[2]
     IDInput.PlaceholderText = "Discord ID (Optional)"
     IDInput.TextColor3 = Color3.fromRGB(200, 200, 200)
-    IDInput.TextSize = 10
+    IDInput.TextSize = 12 -- [UPDATED] Lebih Besar
     IDInput.TextXAlignment = "Left"
     IDInput.ClearTextOnFocus = false
     
