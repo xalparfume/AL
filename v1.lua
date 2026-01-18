@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Taller Rows)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Final Polish V2)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -335,7 +335,7 @@ local function CreateTab(name, target, isDefault)
     TabBtn.Font = Enum.Font.GothamMedium 
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    TabBtn.TextSize = 13 -- [UPDATED] Ukuran Text Tab jadi 13
+    TabBtn.TextSize = 12 -- [UPDATED] Ukuran Text Tab jadi 12
     TabBtn.ZIndex = 3
     
     -- [NEW] Active Line Indicator (POSISI DI KIRI)
@@ -392,7 +392,7 @@ local function CreateToggle(parent, text, default, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
+    Frame.Size = UDim2.new(1, 0, 0, 34) -- [UPDATED] Tinggi jadi 34
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -434,7 +434,7 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 32) -- [UPDATED] Tinggi jadi 32
+    Frame.Size = UDim2.new(1, 0, 0, 34) -- [UPDATED] Tinggi jadi 34
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -462,10 +462,11 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     Btn.MouseButton1Click:Connect(callback)
 end
 
-local function CreateInput(parent, placeholder, default, callback)
+local function CreateInput(parent, placeholder, default, callback, height)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
+    -- [UPDATED] Gunakan parameter height jika ada, jika tidak gunakan default 26 (kembali ramping)
+    Frame.Size = UDim2.new(1, 0, 0, height or 26) 
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -493,11 +494,12 @@ end
 -- /////////////////////////////////////////////////////////////
 
 -- TAB: Config (External URL & Load Only)
-CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", function(v) Config.ExternalConfigURL = v end)
+-- [UPDATED] Tinggi 40 untuk input URL (Lebih Tinggi)
+CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", function(v) Config.ExternalConfigURL = v end, 40)
 
 local LoadWrapper = Instance.new("Frame", Page_Config)
 LoadWrapper.BackgroundTransparency = 1
-LoadWrapper.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi menyesuaikan (30)
+LoadWrapper.Size = UDim2.new(1, 0, 0, 40) -- [UPDATED] Tinggi Wrapper Load Config 40
 
 local LoadBtn = Instance.new("TextButton", LoadWrapper)
 LoadBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
@@ -513,9 +515,10 @@ Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 4)
 LoadBtn.MouseButton1Click:Connect(function() LoadExternalConfig(Config.ExternalConfigURL) end)
 
 -- TAB: Link Webhook
-UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end)
-UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end)
-UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end)
+-- [UPDATED] Tinggi 40 untuk input URL Webhook (Lebih Tinggi)
+UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end, 40)
+UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end, 40)
+UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end, 40)
 
 -- TAB: Tag Discord
 for i = 1, 20 do
