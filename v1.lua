@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Resized & No Overlay)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Final Menu Names)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -176,7 +176,7 @@ MainStroke.Thickness = 1
 -- Header Bar
 local Header = Instance.new("Frame", MainFrame)
 Header.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Slightly lighter
-Header.Size = UDim2.new(1, 0, 0, 22)
+Header.Size = UDim2.new(1, 0, 0, 30) 
 Header.BorderSizePixel = 0
 Header.ZIndex = 5
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 4)
@@ -190,12 +190,12 @@ HeaderSquare.Size = UDim2.new(1,0,0,5)
 
 local TitleLab = Instance.new("TextLabel", Header)
 TitleLab.BackgroundTransparency = 1
-TitleLab.Position = UDim2.new(0, 8, 0, 0)
+TitleLab.Position = UDim2.new(0, 10, 0, 0)
 TitleLab.Size = UDim2.new(0, 200, 1, 0)
 TitleLab.Font = Enum.Font.GothamBold
 TitleLab.Text = "XAL PS Monitoring"
 TitleLab.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-TitleLab.TextSize = 13 -- Seraphin header size
+TitleLab.TextSize = 14 -- Sedikit lebih besar
 TitleLab.TextXAlignment = "Left"
 TitleLab.ZIndex = 6
 
@@ -203,31 +203,31 @@ TitleLab.ZIndex = 6
 local CloseBtn = Instance.new("TextButton", Header)
 CloseBtn.Name = "Close"
 CloseBtn.BackgroundTransparency = 1
-CloseBtn.Position = UDim2.new(1, -22, 0, 0)
-CloseBtn.Size = UDim2.new(0, 22, 1, 0)
+CloseBtn.Position = UDim2.new(1, -30, 0, 0)
+CloseBtn.Size = UDim2.new(0, 30, 1, 0) 
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "×" 
 CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-CloseBtn.TextSize = 16
+CloseBtn.TextSize = 18
 CloseBtn.ZIndex = 6
 
 -- [MINIMALIST] Minimize Button (-)
 local MinBtn = Instance.new("TextButton", Header)
 MinBtn.Name = "Minimize"
 MinBtn.BackgroundTransparency = 1
-MinBtn.Position = UDim2.new(1, -44, 0, 0)
-MinBtn.Size = UDim2.new(0, 22, 1, 0)
+MinBtn.Position = UDim2.new(1, -60, 0, 0)
+MinBtn.Size = UDim2.new(0, 30, 1, 0)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.Text = "−" 
 MinBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-MinBtn.TextSize = 16
+MinBtn.TextSize = 18
 MinBtn.ZIndex = 6
 
 -- Sidebar Menu
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Sidebar.Position = UDim2.new(0, 0, 0, 22)
-Sidebar.Size = UDim2.new(0, 100, 1, -22) -- Sidebar lebar 100
+Sidebar.Position = UDim2.new(0, 0, 0, 30)
+Sidebar.Size = UDim2.new(0, 100, 1, -30) 
 Sidebar.BorderSizePixel = 0
 Sidebar.ZIndex = 2
 
@@ -239,25 +239,23 @@ Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 5)
 -- Content Container
 local ContentContainer = Instance.new("Frame", MainFrame)
 ContentContainer.BackgroundTransparency = 1
-ContentContainer.Position = UDim2.new(0, 105, 0, 27)
-ContentContainer.Size = UDim2.new(1, -110, 1, -32)
+ContentContainer.Position = UDim2.new(0, 105, 0, 35)
+ContentContainer.Size = UDim2.new(1, -110, 1, -40)
 ContentContainer.ZIndex = 3
 
 -- [REVISED] Confirmation Modal (Tanpa Overlay Hitam)
--- Langsung di ScreenGui, tapi tanpa background hitam layar penuh.
--- ZIndex tinggi agar selalu di atas.
 local ModalFrame = Instance.new("Frame", ScreenGui)
 ModalFrame.Name = "ModalConfirm"
 ModalFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 ModalFrame.Size = UDim2.new(0, 220, 0, 100)
 ModalFrame.Position = UDim2.new(0.5, -110, 0.5, -50) -- Center Screen
 ModalFrame.BorderSizePixel = 0
-ModalFrame.ZIndex = 100 -- Sangat tinggi
+ModalFrame.ZIndex = 100 
 ModalFrame.Visible = false
-ModalFrame.Active = true -- Block click-through
+ModalFrame.Active = true 
 Instance.new("UICorner", ModalFrame).CornerRadius = UDim.new(0, 6)
 
--- Drop Shadow untuk Modal agar terpisah dari background game
+-- Drop Shadow
 local ModalShadow = Instance.new("ImageLabel", ModalFrame)
 ModalShadow.Name = "Shadow"
 ModalShadow.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -314,7 +312,6 @@ local function CreatePage(name)
     Page.AutomaticCanvasSize = "Y"
     Page.ZIndex = 4
     
-    -- [UPDATED] Menambahkan jarak vertikal antar elemen (Padding: 4px)
     local layout = Instance.new("UIListLayout", Page)
     layout.Padding = UDim.new(0, 4) 
     
@@ -341,7 +338,6 @@ local function CreateTab(name, target)
     TabBtn.TextSize = 10
     TabBtn.ZIndex = 3
     
-    -- Active State Indicator logic
     TabBtn.MouseButton1Click:Connect(function()
         Page_Webhook.Visible = false; Page_Send.Visible = false; Page_Config.Visible = false; Page_Tag.Visible = false; Page_Url.Visible = false
         target.Visible = true
@@ -356,21 +352,20 @@ local function CreateTab(name, target)
     end)
 end
 
--- Tab Order
-CreateTab("Webhook", Page_Webhook)
-CreateTab("Send", Page_Send)
-CreateTab("Link Webhook", Page_Url) 
-CreateTab("Tag Discord", Page_Tag)
-CreateTab("Config", Page_Config) 
+-- Tab Order [UPDATED NAMES]
+CreateTab("Notification", Page_Webhook) -- Was: Webhook
+CreateTab("Connection", Page_Send) -- Was: Send
+CreateTab("Webhook", Page_Url) -- Was: Link Webhook
+CreateTab("List Player", Page_Tag) -- Was: Tag Discord
+CreateTab("Load Config", Page_Config) -- Was: Config
 
 -- [MINIMALIST UI HELPER FUNCTIONS]
 
--- Toggle: Text Left, Switch Right
 local function CreateToggle(parent, text, default, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 24) -- Lebih Kecil (Seraphin style)
+    Frame.Size = UDim2.new(1, 0, 0, 24)
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -406,26 +401,11 @@ local function CreateToggle(parent, text, default, callback)
     end)
 end
 
--- Action Button: Flat, Simple
-local function CreateAction(parent, text, color, callback)
-    local Btn = Instance.new("TextButton", parent)
-    Btn.BackgroundColor3 = color
-    Btn.BackgroundTransparency = 0.2
-    Btn.Size = UDim2.new(1, 0, 0, 22) -- Lebih Kecil
-    Btn.Font = Enum.Font.GothamSemibold
-    Btn.Text = text
-    Btn.TextColor3 = Color3.new(1, 1, 1)
-    Btn.TextSize = 11
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
-    Btn.MouseButton1Click:Connect(callback)
-end
-
--- Helper: Create Button with Label (Text Left, Button Right)
 local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 26) -- Sedikit lebih tinggi
+    Frame.Size = UDim2.new(1, 0, 0, 26) 
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -442,7 +422,7 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     local Btn = Instance.new("TextButton", Frame)
     Btn.BackgroundColor3 = btnColor
     Btn.BackgroundTransparency = 0.2
-    Btn.Position = UDim2.new(1, -70, 0.5, -10) -- Tombol di kanan
+    Btn.Position = UDim2.new(1, -70, 0.5, -10)
     Btn.Size = UDim2.new(0, 60, 0, 20)
     Btn.Font = Enum.Font.GothamSemibold
     Btn.Text = btnText
@@ -453,11 +433,10 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     Btn.MouseButton1Click:Connect(callback)
 end
 
--- Input: Horizontal Layout (Label Left, Box Right)
 local function CreateInput(parent, placeholder, default, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Frame.Size = UDim2.new(1, 0, 0, 24) -- Lebih Kecil
+    Frame.Size = UDim2.new(1, 0, 0, 24)
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -482,14 +461,30 @@ end
 
 -- TAB: Config (External URL & Load Only)
 CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", function(v) Config.ExternalConfigURL = v end)
-CreateAction(Page_Config, "LOAD CONFIG", Color3.fromRGB(60, 120, 200), function() LoadExternalConfig(Config.ExternalConfigURL) end)
 
--- TAB: Link Webhook (Moved here)
+local LoadWrapper = Instance.new("Frame", Page_Config)
+LoadWrapper.BackgroundTransparency = 1
+LoadWrapper.Size = UDim2.new(1, 0, 0, 24)
+
+local LoadBtn = Instance.new("TextButton", LoadWrapper)
+LoadBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
+LoadBtn.BackgroundTransparency = 0.2
+LoadBtn.Position = UDim2.new(1, -80, 0, 0)
+LoadBtn.Size = UDim2.new(0, 80, 1, 0)
+LoadBtn.Font = Enum.Font.GothamSemibold
+LoadBtn.Text = "LOAD CONFIG"
+LoadBtn.TextColor3 = Color3.new(1, 1, 1)
+LoadBtn.TextSize = 10
+Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 4)
+
+LoadBtn.MouseButton1Click:Connect(function() LoadExternalConfig(Config.ExternalConfigURL) end)
+
+-- TAB: Link Webhook
 UI_FishInput = CreateInput(Page_Url, "Fish Webhook", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end)
 UI_LeaveInput = CreateInput(Page_Url, "Leave Webhook", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end)
 UI_ListInput = CreateInput(Page_Url, "List Webhook", Current_Webhook_List, function(v) Current_Webhook_List = v end)
 
--- TAB: Tag Discord (Minimalist Side-by-Side dengan Nomor)
+-- TAB: Tag Discord
 for i = 1, 20 do
     local rowData = TagList[i]
     local Row = Instance.new("Frame", Page_Tag)
@@ -498,7 +493,6 @@ for i = 1, 20 do
     Row.Size = UDim2.new(1, 0, 0, 24)
     Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 4)
     
-    -- Nomor Urut
     local Num = Instance.new("TextLabel", Row)
     Num.BackgroundTransparency = 1
     Num.Position = UDim2.new(0, 5, 0, 0)
@@ -509,10 +503,9 @@ for i = 1, 20 do
     Num.TextSize = 10
     Num.TextXAlignment = "Left"
 
-    -- Input Username (Kiri)
     local UserInput = Instance.new("TextBox", Row)
     UserInput.BackgroundTransparency = 1
-    UserInput.Position = UDim2.new(0, 25, 0, 0) -- Bergeser sedikit untuk nomor
+    UserInput.Position = UDim2.new(0, 25, 0, 0)
     UserInput.Size = UDim2.new(0.35, -25, 1, 0)
     UserInput.Font = Enum.Font.Gotham
     UserInput.Text = rowData[1]
@@ -522,14 +515,12 @@ for i = 1, 20 do
     UserInput.TextXAlignment = "Left"
     UserInput.ClearTextOnFocus = false
     
-    -- Separator
     local Sep = Instance.new("Frame", Row)
     Sep.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Sep.BorderSizePixel = 0
     Sep.Position = UDim2.new(0.35, 5, 0.2, 0)
     Sep.Size = UDim2.new(0, 1, 0.6, 0)
     
-    -- Input ID (Kanan)
     local IDInput = Instance.new("TextBox", Row)
     IDInput.BackgroundTransparency = 1
     IDInput.Position = UDim2.new(0.35, 15, 0, 0)
@@ -552,8 +543,7 @@ CreateToggle(Page_Webhook, "Secret Caught", Settings.SecretEnabled, function(v) 
 CreateToggle(Page_Webhook, "Ruby Gemstone", Settings.RubyEnabled, function(v) Settings.RubyEnabled = v end)
 CreateToggle(Page_Webhook, "Player Leave", Settings.LeaveEnabled, function(v) Settings.LeaveEnabled = v end)
 
--- TAB: Send [UPDATED: Left Name, Right Button]
--- Helper: Test Webhook Connection
+-- TAB: Send
 local function TestWebhook(url, name)
     task.spawn(function()
         local p = { content = "✅ **TEST:** " .. name .. " Connected!", username = "XAL Notifications!", avatar_url = "https://i.imgur.com/GWx0mX9.jpeg" }
@@ -570,7 +560,7 @@ CreateActionWithLabel(Page_Send, "Send Player List", "Send", Color3.fromRGB(60, 
     end)
 end)
 
-CreateActionWithLabel(Page_Send, "Player Non PS (Auto Tag)", "Send", Color3.fromRGB(200, 100, 50), function()
+CreateActionWithLabel(Page_Send, "Player Non PS", "Send", Color3.fromRGB(200, 100, 50), function()
     local current = {}
     for _, p in ipairs(Players:GetPlayers()) do current[string.lower(p.Name)] = true end
     local missingNames = {}; local missingTags = {}
@@ -591,7 +581,6 @@ CreateActionWithLabel(Page_Send, "Player Non PS (Auto Tag)", "Send", Color3.from
     end)
 end)
 
--- [UPDATED] Check Webhook Buttons (Consistency)
 CreateActionWithLabel(Page_Send, "Check Notif Fish", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Fish, "Webhook 1") end)
 CreateActionWithLabel(Page_Send, "Check Notif Leave", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_Leave, "Webhook 2") end)
 CreateActionWithLabel(Page_Send, "Check Notif Player", "Test", Color3.fromRGB(60, 60, 60), function() TestWebhook(Current_Webhook_List, "Webhook 3") end)
