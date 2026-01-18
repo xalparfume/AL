@@ -1,5 +1,5 @@
 --[[
-    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Input Spacing Adjusted)
+    XAL MONITORING SYSTEM - DEVELOPMENT BASE (Seraphin Style - Final Layout Fix)
     
     Cara Penggunaan:
     1. Masukkan Link RAW JSON (GitHub/Supabase) pada GUI atau di variabel 'ExternalConfigURL'.
@@ -392,7 +392,7 @@ local function CreateToggle(parent, text, default, callback)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
+    Frame.Size = UDim2.new(1, 0, 0, 30) 
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -434,7 +434,7 @@ local function CreateActionWithLabel(parent, labelText, btnText, btnColor, callb
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     Frame.BackgroundTransparency = 0
-    Frame.Size = UDim2.new(1, 0, 0, 30) -- [UPDATED] Tinggi jadi 30
+    Frame.Size = UDim2.new(1, 0, 0, 30) 
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 4)
     
@@ -505,17 +505,17 @@ CreateInput(Page_Config, "External URL", Config.ExternalConfigURL or "", functio
 
 local LoadWrapper = Instance.new("Frame", Page_Config)
 LoadWrapper.BackgroundTransparency = 1
-LoadWrapper.Size = UDim2.new(1, 0, 0, 36) -- [UPDATED] Tinggi Wrapper Load Config 36
+LoadWrapper.Size = UDim2.new(1, 0, 0, 26) -- [UPDATED] Dikecilkan kembali ke 26 (tapi hanya wrapper)
 
 local LoadBtn = Instance.new("TextButton", LoadWrapper)
 LoadBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
 LoadBtn.BackgroundTransparency = 0.2
-LoadBtn.Position = UDim2.new(1, -80, 0, 0)
-LoadBtn.Size = UDim2.new(0, 80, 1, 0)
-LoadBtn.Font = Enum.Font.GothamBold -- [UPDATED] Lebih Tebal
+LoadBtn.Position = UDim2.new(1, -80, 0, 4) -- [UPDATED] Posisi di kanan
+LoadBtn.Size = UDim2.new(0, 80, 0, 22) -- [UPDATED] Ukuran Kecil (80x22)
+LoadBtn.Font = Enum.Font.GothamBold
 LoadBtn.Text = "LOAD CONFIG"
 LoadBtn.TextColor3 = Color3.new(1, 1, 1)
-LoadBtn.TextSize = 12 -- [UPDATED] Lebih Besar
+LoadBtn.TextSize = 10
 Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 4)
 
 LoadBtn.MouseButton1Click:Connect(function() LoadExternalConfig(Config.ExternalConfigURL) end)
